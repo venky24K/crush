@@ -108,7 +108,7 @@ class _HomeNavigationScreenState extends State<HomeNavigationScreen> {
                 Icon(
                   icon,
                   size: 26,
-                  color: isSelected ? AppColors.primary : AppColors.textMuted,
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
                 ),
                 if (isSelected) ...[
                   const SizedBox(width: 8),

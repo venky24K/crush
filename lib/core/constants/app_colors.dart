@@ -3,31 +3,31 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // ─── Brand Palette (Warm Peach / Coral) ─────────────────────────────────
-  static const Color primary       = Color(0xFFFF9B85); // Peach Coral   – primary brand
-  static const Color primaryAccent = Color(0xFFFFC4A8); // Soft Peach    – secondary brand
-  static const Color secondary     = Color(0xFFFF9B85); // same as primary for gradient
-  static const Color tertiary      = Color(0xFFFFE5D4); // Blush Cream   – highlights
+  // ─── Brand Signature Accent (Punchy Peach-Coral) ────────────────────────
+  static const Color primary       = Color(0xFFFF5364); // Vibrant Coral-Pink
+  static const Color primaryAccent = Color(0xFFFF7A68); // Warm Peach-Coral
+  static const Color secondary     = Color(0xFFFF5364);
+  static const Color tertiary      = Color(0xFFFFECEB); // Soft subtle coral tint
 
-  // ─── Backgrounds & Surfaces ─────────────────────────────────────────────
-  static const Color background  = Color(0xFFFFF8F2); // Warm Ivory    – scaffold bg
-  static const Color surface     = Color(0xFFFFFFFF); // Pure White    – cards / sheets
-  static const Color surfaceLight = Color(0xFFFFF1E9); // Light Peach   – input fills / chips
-  static const Color cardBorder  = Color(0xFFFFD9C8); // Soft border
+  // ─── Backgrounds & Surfaces (Crisp, High-Contrast Modern Light) ──────────
+  static const Color background    = Color(0xFFFFFFFF); // Pure White – never muddy
+  static const Color surface       = Color(0xFFFFFFFF); // Pure White cards
+  static const Color surfaceLight  = Color(0xFFF3F4F6); // Clean Light Gray (search, bubbles, inputs)
+  static const Color cardBorder    = Color(0xFFE5E7EB); // Crisp border definition
 
-  // ─── Typography ─────────────────────────────────────────────────────────
-  static const Color textPrimary   = Color(0xFF59423D); // Cocoa Brown   – headings
-  static const Color textSecondary = Color(0xFF92756C); // Muted Rose    – body / captions
-  static const Color textMuted     = Color(0xFFBFA59F); // Dusty Blush   – placeholders
+  // ─── Typography (High Contrast, Crystal Clear) ──────────────────────────
+  static const Color textPrimary   = Color(0xFF111827); // Dark Charcoal / Near Black
+  static const Color textSecondary = Color(0xFF4B5563); // Slate Gray – readable body
+  static const Color textMuted     = Color(0xFF9CA3AF); // Crisp Neutral Gray – timestamps, hints
 
-  // ─── Swipe Action Colors (unchanged – universally recognised) ───────────
-  static const Color like      = Color(0xFF20BF6B); // Emerald Green
-  static const Color nope      = Color(0xFFEB3B5A); // Crimson Red
-  static const Color superLike = Color(0xFF3867D6); // Electric Blue
-  static const Color rewind    = Color(0xFFF7B731); // Golden Sun
-  static const Color boost     = Color(0xFF8854D0); // Royal Purple
+  // ─── Swipe Action Colors ────────────────────────────────────────────────
+  static const Color like      = Color(0xFF10B981); // Emerald Green
+  static const Color nope      = Color(0xFFEF4444); // Crimson Red
+  static const Color superLike = Color(0xFF3B82F6); // Electric Blue
+  static const Color rewind    = Color(0xFFF59E0B); // Amber Sun
+  static const Color boost     = Color(0xFF8B5CF6); // Royal Purple
 
-  // ─── Light-theme aliases (kept for reference) ───────────────────────────
+  // ─── Aliases ────────────────────────────────────────────────────────────
   static const Color lightBackground   = background;
   static const Color lightSurface      = surface;
   static const Color lightTextPrimary  = textPrimary;
@@ -40,7 +40,7 @@ class AppColors {
     colors: [primary, primaryAccent],
   );
 
-  /// Warm gradient used on swipe cards (bottom overlay keeps readability)
+  /// Card overlay gradient to guarantee white name & age are 100% readable
   static const LinearGradient cardOverlayGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -48,15 +48,15 @@ class AppColors {
     colors: [
       Colors.transparent,
       Colors.transparent,
-      Color(0x55000000),
-      Color(0xCC000000),
+      Color(0x66000000),
+      Color(0xDD000000),
     ],
   );
 
-  /// Match celebration — warm rose instead of dark purple
+  /// Match celebration gradient
   static const LinearGradient matchCelebrationGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFFF9B85), Color(0xFFFFC4A8)],
+    colors: [Color(0xFFFF5364), Color(0xFFFF8E72)],
   );
 }

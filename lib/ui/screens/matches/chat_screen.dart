@@ -324,7 +324,7 @@ class _ChatScreenState extends State<ChatScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           gradient: isMe ? AppColors.primaryGradient : null,
-          color: isMe ? null : AppColors.surface,
+          color: isMe ? null : AppColors.surfaceLight,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
@@ -339,8 +339,8 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Text(
               text,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: isMe ? Colors.white : AppColors.textPrimary,
                 fontSize: 15,
                 height: 1.35,
               ),
