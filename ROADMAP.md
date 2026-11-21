@@ -1,6 +1,6 @@
 # 🗺️ Crush - Product & Engineering Roadmap
 
-This roadmap outlines the past milestones, current capabilities, and future vision for **Crush** — from core swipe mechanics to AI-assisted matching, safety systems, and global monetization.
+This roadmap outlines the completed milestones, current capabilities, and future vision for **Crush** — from core swipe mechanics to AI-assisted matching, safety systems, and global monetization.
 
 ---
 
@@ -8,102 +8,138 @@ This roadmap outlines the past milestones, current capabilities, and future visi
 
 ```mermaid
 flowchart LR
-    A["Phase 1: Core App & Supabase (Done)"] --> B["Phase 2: Auth, Geolocation & Push"]
-    B --> C["Phase 3: Monetization & Premium Tiers"]
-    C --> D["Phase 4: AI & Advanced Safety"]
+    A["Phase 1: Core MVP & Backend (Done)"] --> B["Phase 1.5: Brand, UI/UX & Perf (Done)"]
+    B --> C["Phase 2: Auth, Geo & Push (Next)"]
+    C --> D["Phase 3: Monetization & Revenue"]
+    D --> E["Phase 4: AI & Trust Safety"]
 ```
 
 ---
 
 ## ✅ Phase 1: Core MVP & Foundation *(Completed)*
 
-- [x] **Flutter Architecture & Theme**
-  - Material 3 design system with signature rose/coral romantic gradients (`#FD297B` to `#FF655B`).
-  - Dark mode by default with typography powered by *Plus Jakarta Sans*.
+- [x] **Flutter Architecture & State Management**
+  - Modular clean-architecture project structure (`core`, `models`, `providers`, `ui`, `services`).
   - Provider state architecture separating Auth, Discovery, and Chat concerns.
+  - Zero-config offline Demo Mode with 5 rich mock profiles and simulated automated chat replies.
 - [x] **Gesture Card Swiping Deck**
-  - Smooth physics-driven card drag gestures (Swipe Right to Like, Left to Pass, Up to Super Crush).
-  - Multi-photo carousel on cards with story progress bars and touch edge zones.
-  - Action buttons with micro-press animations: Rewind, Dislike, Super Crush, Like, and Boost.
-- [x] **Match System & Celebrations**
-  - Automatic PostgreSQL trigger (`handle_swipe_match`) detecting mutual likes in the database.
-  - Animated celebration dialog showing interlocking avatars, heart pulse, and instant chat CTA.
-- [x] **Realtime Chat & Icebreakers**
-  - Live 1-on-1 messaging powered by Supabase Realtime publications.
-  - Horizontal carousel for new match stories.
-  - Interactive icebreaker suggestion pills to easily kickstart conversations.
-- [x] **Discovery Filters & Profile Management**
-  - Distance (5–100 km), age range (18–60), and gender preference filters.
-  - Photo grid management (up to 6 photos) and 20+ passion tags.
-  - `avatars` public storage bucket with user-isolated RLS upload policies.
-- [x] **Zero-Config Demo Mode**
-  - Offline fallback with rich Unsplash portrait profiles and automated reply bot for instant preview.
+  - Card swiper with physics-driven gestures (Right: Like, Left: Pass, Up: Super Crush).
+  - Multi-photo carousel on cards with story progress indicators and tap edge navigation.
+  - Floating action buttons with micro-press physics: Rewind, Dislike, Super Crush, Like, and Boost.
+- [x] **Live Supabase Backend & Database Schema**
+  - PostgreSQL schema with Row-Level Security (RLS) on `profiles`, `swipes`, `matches`, and `messages`.
+  - Database triggers:
+    - `handle_swipe_match`: Automatically creates mutual matches on reciprocal likes.
+    - `handle_new_message`: Updates match `last_message` and timestamps in realtime.
+  - Supabase Storage `avatars` bucket with user-isolated upload and delete policies.
+  - Realtime publication stream enabled for live chat and match notifications.
+- [x] **Realtime Messaging & Icebreakers**
+  - 1-on-1 chat interface with message bubbles, status indicators, and photo avatars.
+  - Interactive icebreaker suggestion pills to easily start conversations.
+  - Active matches horizontal story bar.
+- [x] **Discovery Filters & Profile Editing**
+  - Dynamic discovery filters sheet: Distance slider (5–100 km), Age range slider (18–60), and Gender preference.
+  - Profile detail modal bottom sheet with photo gallery, bio, work, school, and passion chips.
+  - Profile edit screen supporting bio updates and multi-photo management.
 
 ---
 
-## 🚀 Phase 2: Enhanced Identity, Geo & Push *(Next Up)*
+## ✅ Phase 1.5: Brand Identity, High-Contrast UI & Performance *(Completed)*
 
+- [x] **Brand Identity & Asset Suite**
+  - Custom **crush** logo typography featuring a soft coral heart nested inside the `"u"`.
+  - Master high-res transparent wordmark (`logo_wordmark.png`) and full logo (`logo_transparent.png`).
+  - Full suite of iOS App Icons (15 resolutions from 20×20 to 1024×1024 in `AppIcon.appiconset`).
+  - Complete Android mipmap launcher icons (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`).
+- [x] **Flutter Native Splash Screen**
+  - Integrated `flutter_native_splash` for instant native app startup on iOS and Android.
+  - Branded launch screen on Warm Ivory (`#FFF8F2`) background with the centered logo wordmark.
+  - Smooth native-to-Flutter transition using `FlutterNativeSplash.preserve()` and `.remove()`.
+- [x] **Crisp High-Contrast Light Theme Overhaul**
+  - Switched from dark muddy tones to a clean, modern, high-contrast light theme:
+    - **Background**: Pure `#FFFFFF` for crisp readability across Discovery, Matches, and Chat.
+    - **Containers & Search**: `#F3F4F6` (Light Neutral Grey) with subtle `#E5E7EB` borders.
+    - **Typography**: Deep Charcoal `#111827` (Headings) and Slate Grey `#4B5563` (Subtitles/Bios).
+    - **Brand Accent**: Punchy Peach-Coral `#FF5364` on action buttons, badges, and active tabs.
+- [x] **60 FPS Swiping & Rendering Optimization**
+  - Eliminated swipe stutter by removing mid-animation `notifyListeners()` calls during swipe events.
+  - Implemented granular `Selector` rebuild scopes for card deck state and rewind button state.
+  - Added `RepaintBoundary` wrappers around swipe cards and app bar components.
+  - Fixed Material layering and invisible ink splash assertions across list tiles and bottom sheets.
+  - Guarded photo carousel indices and dynamic card counts against `RangeError` exceptions.
+
+---
+
+## 🚀 Phase 2: Enhanced Identity, Geo & Push *(In Progress)*
+
+- [ ] **Sign in with Apple (Mandatory for App Store)**
+  - Native Apple Sign-In flow via `sign_in_with_apple`.
+  - Supabase Auth Apple provider integration with nonce verification.
+- [ ] **Sign in with Google (OAuth2)**
+  - Google Sign-In SDK configuration for iOS and Android.
+  - One-tap sign-in and profile pre-fill (name, photo, email).
 - [ ] **Phone Number (SMS) Authentication**
-  - Integrate Supabase Phone Provider (Twilio / MessageBird) for SMS verification codes.
-  - Auto-SMS retrieval on Android and iOS.
-- [ ] **Social Authentication**
-  - Sign in with Apple (mandatory for iOS App Store compliance on social apps).
-  - Sign in with Google (OAuth2).
-- [ ] **Live Geolocation & PostGIS Queries**
-  - Device GPS coordinate capture via `geolocator`.
-  - Supabase PostGIS spatial query (`ST_DWithin` & `ST_DistanceSphere`) to compute live distances and query profiles within user radius.
-- [ ] **Push Notifications**
-  - Firebase Cloud Messaging (FCM) & Apple Push Notification service (APNs).
-  - Background notifications for: *"You got a new Crush!"*, *"Someone liked you"*, and new chat messages.
-- [ ] **Audio & Voice Messages in Chat**
-  - Record and send waveform voice notes directly in chat screen.
+  - Twilio / MessageBird SMS OTP verification via Supabase Auth.
+  - Auto-SMS code retrieval and keypad formatting.
+- [ ] **Live Geolocation & PostGIS Distance Queries**
+  - Device GPS coordinate capture via `geolocator` with permission dialogs.
+  - PostgreSQL PostGIS queries (`ST_DWithin`, `ST_DistanceSphere`) to calculate exact distances and filter profiles dynamically within the user's selected radius.
+- [ ] **Push Notifications (FCM / APNs)**
+  - Firebase Cloud Messaging integration for iOS (APNs) and Android.
+  - Push triggers on:
+    - Mutual match (*"It's a Match! Say hello to [Name]"*).
+    - Incoming chat message.
+    - Profile super likes.
+- [ ] **Voice Notes & Audio in Chat**
+  - In-chat voice recording and playback with interactive waveform visualizers.
 
 ---
 
 ## 💎 Phase 3: Premium Features & Monetization *(Q2)*
 
-- [ ] **In-App Purchases & Subscriptions**
-  - Integrate **RevenueCat** SDK for unified iOS App Store & Google Play Store billing.
+- [ ] **RevenueCat In-App Purchases (IAP)**
+  - Integration with Apple StoreKit 2 and Google Play Billing via RevenueCat.
+  - Paywall screens with introductory trials and subscription tiers.
 - [ ] **Crush Gold Subscription**
-  - **"See Who Liked You"**: Grid view revealing users who already swiped right on you.
-  - **Unlimited Swipes**: Remove the daily like cap.
-  - **5 Free Super Crushes daily**.
-  - **Passport Mode**: Change your GPS location to match with singles in any city worldwide.
-  - **Unlimited Rewinds**: Undo any accidental left swipe.
+  - **"See Who Liked You"**: Grid view displaying users who already swiped right on your profile.
+  - **Unlimited Swipes**: Remove the standard 50 likes/12-hour limit.
+  - **5 Free Super Crushes Daily**.
+  - **Passport Mode**: Travel to any city in the world to browse and match prior to visiting.
+  - **Unlimited Rewinds**: Undo any accidental pass.
 - [ ] **Crush Platinum Subscription**
-  - **Priority Likes**: Your profile card gets placed at the top of other users' discovery decks.
-  - **Message Before Match**: Attach a note when sending a Super Crush.
+  - **Priority Likes**: Card placed at the top of the deck for users you like.
+  - **Note with Super Crush**: Send a personalized note before matching.
 - [ ] **Consumable Packs**
-  - **Crush Boost**: 30-minute top profile placement in your local area (10x impressions).
-  - **Super Crush Packs**: Buy packs of 5, 15, or 30 Super Crushes.
+  - **Crush Boost**: 30-minute top profile placement in your local area (up to 10x visibility).
+  - **Super Crush Bundles**: Packs of 5, 15, or 30 Super Crushes.
 
 ---
 
 ## 🛡️ Phase 4: Trust, Safety & AI *(Q3)*
 
-- [ ] **Photo Verification with Selfie Liveness**
-  - Pose verification (e.g. "turn head left, smile") using on-device ML Kit.
-  - Blue checkmark badge granted upon automated face comparison.
-- [ ] **AI-Powered Icebreaker & Conversation Coach**
-  - Contextual opener generation using Google Gemini API based on the match's mutual interests and bio prompts.
-  - Real-time conversation health nudges to prevent chats from stalling.
-- [ ] **Trust & Safety Center**
-  - Date Check-In: Share date details & live location with emergency contacts.
-  - Incognito Mode: Only people you've swiped right on can see your profile.
-  - Hide from Contacts: Block friends, exes, and coworkers by syncing phone contact hashes.
-- [ ] **In-App Audio / Video Dates**
-  - Peer-to-peer encrypted audio and video calling via WebRTC / Agora SDK without sharing phone numbers or social handles.
+- [ ] **Selfie Photo Verification**
+  - On-device liveness and pose verification (e.g. smile, head tilt) using ML Kit.
+  - Blue verified badge issued upon automated facial match against profile pictures.
+- [ ] **Gemini AI Conversation Coach & Icebreakers**
+  - Contextual opener generation powered by the Google Gemini API using mutual interests, music taste, and bio prompts.
+  - Chat revival suggestions when a conversation goes quiet.
+- [ ] **Safety & Privacy Center**
+  - **Date Check-In**: Share date details and live location with trusted emergency contacts.
+  - **Incognito Mode**: Hide profile from discovery; visible only to profiles you swipe right on.
+  - **Block Contacts**: Prevent friends, exes, and coworkers from seeing your profile via hashed contact matching.
+- [ ] **Encrypted Audio / Video Dates**
+  - Secure 1-on-1 peer-to-peer video calls using WebRTC / Agora SDK without sharing phone numbers or personal handles.
 
 ---
 
 ## 📊 Suggested Implementation Priorities
 
-| Priority | Feature | Complexity | Impact |
-| :--- | :--- | :--- | :--- |
-| **P0** | Apple & Google Sign-In | Medium | Critical for App Store approval |
-| **P0** | Push Notifications (FCM / APNs) | Medium | Essential for user retention |
-| **P1** | Live GPS & PostGIS Distance Queries | Medium | Core discovery relevance |
-| **P1** | RevenueCat Subscriptions (Crush Gold) | High | Monetization & revenue |
-| **P2** | Selfie Verification Badge | Medium | Trust & bot prevention |
-| **P2** | Gemini AI Conversation Starters | Low | Engagement & uniqueness |
-| **P3** | In-app 1-on-1 Video Calling | High | Premium user experience |
+| Priority | Feature | Complexity | Impact | Target Release |
+| :--- | :--- | :--- | :--- | :--- |
+| **P0** | Apple & Google Sign-In | Medium | Mandatory for App Store approval | v1.1 |
+| **P0** | Push Notifications (APNs / FCM) | Medium | Core retention and daily active usage | v1.1 |
+| **P1** | Live GPS & PostGIS Distance Queries | Medium | Discovery relevance and real matches | v1.2 |
+| **P1** | RevenueCat Subscriptions (Crush Gold) | High | Direct monetization & recurring revenue | v2.0 |
+| **P2** | Selfie Liveness Verification Badge | Medium | Trust, bot prevention & safety | v2.1 |
+| **P2** | Gemini AI Conversation Starters | Low | Chat engagement & lower drop-off | v2.2 |
+| **P3** | In-app 1-on-1 Video Calling | High | Premium dating experience | v3.0 |
