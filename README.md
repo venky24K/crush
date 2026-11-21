@@ -1,23 +1,45 @@
 # 🔥 Crush - Modern Flutter Dating App
 
-A complete, production-ready, beautifully designed mobile dating application built with **Flutter** and powered by **Supabase** (PostgreSQL, Auth, Storage, and Realtime).
+<div align="center">
+
+![Flutter](https://img.shields.io/badge/Flutter-3.47+-02569B?logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-3.13+-0175C2?logo=dart&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%7C%20Auth%20%7C%20Storage-3ECF8E?logo=supabase&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
+
+**Crush** is a production-ready, beautifully designed mobile dating application built with **Flutter** and powered by **Supabase**. Featuring fluid gesture card swiping, photo story carousels, instant mutual match triggers, and real-time chat.
+
+[Features](#-features) • [Quick Start](#-quick-start) • [Supabase Setup](#-live-supabase-setup) • [Architecture](#-project-architecture) • [Roadmap](ROADMAP.md)
+
+</div>
 
 ---
 
 ## ✨ Features
 
-- **Gesture Card Swiping Deck**: Smooth physics-based card swiping (Swipe Right to Like, Left to Pass, Up to Super Crush).
-- **Photo Carousel with Story Bars**: Tap left/right edges on profile cards to browse photos with top story indicator bars.
-- **Dynamic Floating Action Buttons**: Rewind, Nope, Super Crush, Like, and Boost with micro-press animations and glow effects.
-- **Detailed Profile Sheet**: Expand any card to see full bio, verified badges, job, education, location distance, passions/interests chips, and safety reporting.
-- **"It's a Match!" Celebration**: Animated popup with interlocking avatars, glowing heart badge, and instant "Say Hello" CTA.
-- **1-on-1 Realtime Chat & Matches**:
-  - Horizontal carousel for new matches.
-  - Conversation list with last message preview and unread counters.
-  - Interactive chat screen with icebreaker suggestion pills, message bubbles, and automatic simulated replies in demo mode.
-- **Discovery Filters**: Adjust maximum distance (5–100 km), age range (18–60), and gender preferences.
-- **Profile Management**: Upload photos, edit bio, set occupation/school/city, and pick from 20+ passion tags.
-- **Zero-Config Demo Mode**: Works immediately out of the box with rich sample profiles and mock chat without requiring a Supabase account upfront!
+### 🎴 Discovery & Card Swiping
+- **Gesture Swiper**: Smooth physics-driven swipe gestures (Right = Like, Left = Pass, Up = Super Crush).
+- **Photo Carousel with Story Bars**: Tap the left or right halves of cards to browse photos with top indicator bars (similar to Instagram/Tinder).
+- **Action Floating Buttons**: Rewind (undo last swipe), Dislike, Super Crush, Like, and Boost with micro-press physics.
+- **Detailed Profile Sheet**: Swipe up or tap info to view bio, verified badges, job, education, distance, and 20+ passion tags.
+- **Discovery Filters**: Filter potential matches by maximum distance (5–100 km), age range (18–60), and gender preferences.
+
+### 💖 Matching & Celebration
+- **Automatic Mutual Match Trigger**: PostgreSQL database function automatically detects when two users like each other and instantly creates a match.
+- **Celebration Modal**: Animated popup with interlocking avatars, pulsing heart badge, and immediate CTAs ("Say Hello" or "Keep Swiping").
+
+### 💬 Realtime Messaging & Icebreakers
+- **New Matches Stories**: Horizontal avatar reel highlighting recent mutual matches.
+- **Conversations List**: Real-time previews of last messages, timestamps, and unread counters.
+- **1-on-1 Chat Screen**: Custom message bubbles with sender colors, timestamps, and active status.
+- **Icebreaker Suggestion Pills**: Tap curated icebreaker prompts to immediately send engaging openers.
+- **Auto-Reply Simulator**: In demo mode, matches automatically reply after 1.5 seconds for instant testing.
+
+### 👤 Profile & Customization
+- **Multi-Photo Manager**: Upload and rearrange up to 6 profile photos with a primary photo badge.
+- **About Me & Essentials**: Edit bio, occupation, school, and current city.
+- **Passion Tags**: Interactive chip selector for 20+ lifestyle interests (Coffee Lover, Coding, Hiking, Bouldering, etc.).
+- **Dual Mode**: Seamlessly switch between **Demo Mode** (offline mock data) and **Live Supabase** directly from settings.
 
 ---
 
@@ -28,15 +50,15 @@ crush/
 ├── lib/
 │   ├── core/
 │   │   ├── constants/
-│   │   │   ├── app_colors.dart         # Signature romantic gradient & palette
-│   │   │   ├── app_constants.dart      # Configuration, interests, icebreakers
+│   │   │   ├── app_colors.dart         # Signature rose/coral romantic gradients
+│   │   │   ├── app_constants.dart      # Supabase URL/keys, defaults, interests
 │   │   │   └── app_theme.dart          # Material 3 dark theme & typography
 │   │   └── services/
 │   │       ├── supabase_service.dart   # Supabase client, Auth, Database, Storage
 │   │       └── mock_data_service.dart  # Offline mock profiles & chat engine
 │   ├── models/
 │   │   ├── profile_model.dart          # User profiles (photos, bio, distance)
-│   │   ├── match_model.dart            # Mutual match data
+│   │   ├── match_model.dart            # Mutual match structure
 │   │   └── message_model.dart          # Chat messages
 │   ├── providers/
 │   │   ├── auth_provider.dart          # Auth session, current profile, demo toggle
@@ -55,73 +77,79 @@ crush/
 │   │       └── swipe_card.dart         # Gesture card with photo switching
 │   └── main.dart                       # App entry point & AuthGate
 ├── supabase/
-│   └── schema.sql                      # Complete SQL migrations, triggers & RLS
+│   ├── schema.sql                      # Idempotent database schema, triggers & RLS
+│   └── seed.sql                        # Sample discovery profiles for testing
+├── .env                                # Local environment credentials
+├── ROADMAP.md                          # Full future milestone roadmap
 └── pubspec.yaml
 ```
 
 ---
 
-## 🚀 Quick Start (Instant Demo Mode)
+## 🚀 Quick Start
 
-You can run the app immediately on your simulator, device, or desktop without any backend setup:
+### 1. Prerequisites
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (version 3.13+ / 3.47+)
+- Xcode (for iOS simulator/device) or Android Studio (for Android emulator)
 
+### 2. Install & Run
 ```bash
-# 1. Get dependencies
+# Clone the repository
+git clone https://github.com/your-username/crush.git
+cd crush
+
+# Install dependencies
 flutter pub get
 
-# 2. Run on your preferred target (iOS simulator, Android emulator, macOS, or Chrome)
+# Run the app
 flutter run
 ```
 
-When the app opens:
-1. Tap **"Explore in Demo Mode"** (or sign in with pre-filled test credentials).
-2. Enjoy swiping cards, tapping photos, testing rewinds, triggering matches, and chatting in real-time!
+---
+
+## ⚡ Live Supabase Setup
+
+Your project already has Supabase configured. If setting up a fresh project:
+
+1. **Create a Supabase Project** at [supabase.com](https://supabase.com).
+2. **Apply Database Schema**:
+   - Open **SQL Editor** in your Supabase dashboard.
+   - Paste the contents of [supabase/schema.sql](supabase/schema.sql) and click **Run**.
+   - This sets up tables (`profiles`, `swipes`, `matches`, `messages`), RLS policies, match trigger (`handle_swipe_match`), and the `avatars` storage bucket.
+3. **Seed Test Profiles**:
+   - Paste the contents of [supabase/seed.sql](supabase/seed.sql) into the SQL Editor and click **Run**.
+4. **Update Credentials**:
+   - Set your keys in `.env` and `lib/core/constants/app_constants.dart`:
+     ```dart
+     static const String defaultSupabaseUrl = 'https://YOUR_PROJECT_ID.supabase.co';
+     static const String defaultSupabaseAnonKey = 'YOUR_PUBLISHABLE_KEY';
+     ```
 
 ---
 
-## ⚡ Connecting to Live Supabase Backend
+## 🧪 Testing & Verification
 
-When you are ready to connect to your live Supabase cloud database:
-
-### 1. Create a Supabase Project
-1. Go to [supabase.com](https://supabase.com) and create a free project.
-2. In the Supabase Dashboard, go to **Project Settings -> API** and copy:
-   - **Project URL**
-   - **anon / public key**
-
-### 2. Run Database Migrations
-1. In the Supabase Dashboard, open the **SQL Editor**.
-2. Open the file `supabase/schema.sql` located in this project.
-3. Paste its contents into the SQL Editor and click **Run**.
-   - This sets up:
-     - `profiles` table with Row Level Security (RLS)
-     - `swipes` table with unique constraint on `(swiper_id, swiped_id)`
-     - `matches` table
-     - Automatic database trigger function `handle_swipe_match()`: detects mutual likes and automatically creates a match!
-     - `messages` table with Realtime publication enabled
-     - Storage bucket (`avatars`) with public read policies
-
-### 3. Add Your Credentials in the App
-Open `lib/core/constants/app_constants.dart` and update:
-
-```dart
-static const String defaultSupabaseUrl = 'https://YOUR_PROJECT_ID.supabase.co';
-static const String defaultSupabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
-```
-
-Now launch the app, toggle off Demo Mode in the Profile settings, and the app will authenticate against your live Supabase database!
-
----
-
-## 📱 Testing & Verification
-
-Run the test suite:
 ```bash
+# Run unit and widget tests
 flutter test
-```
 
-Run static code analysis:
-```bash
+# Run static code analysis
 flutter analyze
 ```
-*(Both pass with 0 warnings/errors!)*
+
+Both pass with **0 errors and 0 warnings**.
+
+---
+
+## 🗺️ Roadmap & Future Milestones
+
+See the complete **[ROADMAP.md](ROADMAP.md)** for detailed plans on:
+- **Phase 2**: Apple/Google OAuth, Phone OTP Auth, Live PostGIS GPS Queries, and Push Notifications (FCM/APNs).
+- **Phase 3**: In-App Purchases & Subscriptions (Crush Gold & Platinum via RevenueCat).
+- **Phase 4**: Selfie Liveness Verification, AI Conversation Starters (Gemini API), and In-App Video Dates.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
