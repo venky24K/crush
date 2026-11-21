@@ -1,5 +1,7 @@
 -- Mock Profiles Seed Data for Supabase
--- Run this in the Supabase SQL Editor AFTER running schema.sql to populate initial discovery profiles!
+-- Run this in the Supabase SQL Editor to populate discovery profiles!
+
+alter table public.profiles add column if not exists distance_km double precision default 5.0;
 
 DO $$
 DECLARE
@@ -9,7 +11,7 @@ DECLARE
     u4 uuid := gen_random_uuid();
     u5 uuid := gen_random_uuid();
 BEGIN
-    -- 1. Create Mock Auth Users (Safe for development)
+    -- 1. Create Mock Auth Users
     INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
     VALUES 
         (u1, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'maya@crush.app', crypt('crush123', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Maya Lin"}', now(), now()),
