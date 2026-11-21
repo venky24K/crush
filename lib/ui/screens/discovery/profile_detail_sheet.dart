@@ -47,18 +47,25 @@ class ProfileDetailSheet extends StatelessWidget {
                 children: [
                   SizedBox(
                     height: 380,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: profile.photos.length,
-                      separatorBuilder: (context, index) => const SizedBox(width: 12),
-                      itemBuilder: (context, index) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: CachedNetworkImage(
-                            imageUrl: profile.photos[index],
-                            width: 280,
-                            fit: BoxFit.cover,
-                          ),
+                    child: Builder(
+                      builder: (context) {
+                        final photos = profile.photos.isNotEmpty
+                            ? profile.photos
+                            : [profile.primaryPhoto];
+                        return ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: photos.length,
+                          separatorBuilder: (context, index) => const SizedBox(width: 12),
+                          itemBuilder: (context, index) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: CachedNetworkImage(
+                                imageUrl: photos[index],
+                                width: 280,
+                                fit: BoxFit.cover,
+                              ),
+                            );
+                          },
                         );
                       },
                     ),

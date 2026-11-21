@@ -20,8 +20,16 @@ class SwipeCard extends StatefulWidget {
 class _SwipeCardState extends State<SwipeCard> {
   int _currentPhotoIndex = 0;
 
-  void _nextPhoto() {
-    if (_currentPhotoIndex < widget.profile.photos.length - 1) {
+  @override
+  void didUpdateWidget(covariant SwipeCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.profile.id != widget.profile.id) {
+      _currentPhotoIndex = 0;
+    }
+  }
+
+  void _nextPhoto(int totalPhotos) {
+    if (_currentPhotoIndex < totalPhotos - 1) {
       setState(() => _currentPhotoIndex++);
     }
   }
@@ -38,6 +46,8 @@ class _SwipeCardState extends State<SwipeCard> {
         ? widget.profile.photos
         : [widget.profile.primaryPhoto];
 
+    final safeIndex = _currentPhotoIndex.clamp(0, photos.length - 1);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: Container(
@@ -47,7 +57,7 @@ class _SwipeCardState extends State<SwipeCard> {
           children: [
             // Current Photo
             CachedNetworkImage(
-              imageUrl: photos[_currentPhotoIndex],
+              imageUrl: photos[safeIndex],
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
                 color: AppColors.surfaceLight,
@@ -83,7 +93,7 @@ class _SwipeCardState extends State<SwipeCard> {
                         margin: const EdgeInsets.symmetric(horizontal: 2.5),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(2),
-                          color: index == _currentPhotoIndex
+                          color: index == safeIndex
                               ? Colors.white
                               : Colors.white.withValues(alpha: 0.35),
                         ),
@@ -106,7 +116,7 @@ class _SwipeCardState extends State<SwipeCard> {
                   Expanded(
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      onTap: _nextPhoto,
+                      onTap: () => _nextPhoto(photos.length),
                     ),
                   ),
                 ],

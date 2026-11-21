@@ -143,12 +143,20 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                           child: CardSwiper(
                             controller: _cardSwiperController,
                             cardsCount: discoveryProvider.profiles.length,
-                            numberOfCardsDisplayed: 3,
+                            numberOfCardsDisplayed: discoveryProvider.profiles.length > 2
+                                ? 3
+                                : (discoveryProvider.profiles.isNotEmpty
+                                    ? discoveryProvider.profiles.length
+                                    : 1),
                             backCardOffset: const Offset(0, 36),
                             padding: EdgeInsets.zero,
                             cardBuilder: (context, index, percentX, percentY) {
+                              if (index < 0 || index >= discoveryProvider.profiles.length) {
+                                return const SizedBox.shrink();
+                              }
                               final profile = discoveryProvider.profiles[index];
                               return SwipeCard(
+                                key: ValueKey(profile.id),
                                 profile: profile,
                                 onInfoTap: () {
                                   showModalBottomSheet(
