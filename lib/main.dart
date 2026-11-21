@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
 import 'core/constants/app_theme.dart';
 import 'core/services/supabase_service.dart';
@@ -10,7 +11,10 @@ import 'ui/screens/auth/login_screen.dart';
 import 'ui/screens/home_navigation_screen.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  // Preserve splash screen while initialization finishes
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // Set light status bar & navigation bar for warm ivory theme
   SystemChrome.setSystemUIOverlayStyle(
@@ -24,6 +28,9 @@ void main() async {
 
   // Initialize Supabase (falls back smoothly to Demo Mode if placeholder keys are present)
   await SupabaseService().initialize();
+
+  // Remove splash screen now that core services are ready
+  FlutterNativeSplash.remove();
 
   runApp(const CrushApp());
 }
