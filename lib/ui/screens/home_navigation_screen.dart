@@ -58,7 +58,7 @@ class _HomeNavigationScreenState extends State<HomeNavigationScreen> {
               children: [
                 _buildNavItem(
                   index: 0,
-                  icon: Icons.local_fire_department_rounded,
+                  icon: Icons.style_rounded,
                   label: 'Discover',
                 ),
                 _buildNavItem(

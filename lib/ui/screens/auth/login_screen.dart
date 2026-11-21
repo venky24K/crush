@@ -61,48 +61,13 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Animated Glowing Flame Logo
-                Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: AppColors.primaryGradient,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.4),
-                        blurRadius: 28,
-                        spreadRadius: 4,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.local_fire_department_rounded,
-                      size: 52,
-                      color: Colors.white,
-                    ),
-                  ),
+                // Crush Logo Wordmark
+                Image.asset(
+                  'assets/images/logo_wordmark.png',
+                  height: 68,
+                  fit: BoxFit.contain,
                 ),
-
-                const SizedBox(height: 20),
-
-                // App Title & Tagline
-                ShaderMask(
-                  shaderCallback: (bounds) =>
-                      AppColors.primaryGradient.createShader(bounds),
-                  child: const Text(
-                    'crush',
-                    style: TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.2,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 12),
                 const Text(
                   'Spark genuine connections',
                   style: TextStyle(

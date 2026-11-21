@@ -360,33 +360,10 @@ class _CrushAppBarTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ShaderMask(
-            shaderCallback: (bounds) =>
-                AppColors.primaryGradient.createShader(bounds),
-            child: const Icon(
-              Icons.local_fire_department_rounded,
-              size: 28,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 6),
-          ShaderMask(
-            shaderCallback: (bounds) =>
-                AppColors.primaryGradient.createShader(bounds),
-            child: const Text(
-              'crush',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.8,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
+      child: Image.asset(
+        'assets/images/logo_wordmark.png',
+        height: 28,
+        fit: BoxFit.contain,
       ),
     );
   }
