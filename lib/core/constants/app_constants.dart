@@ -5,9 +5,10 @@ class AppConstants {
   static const String appTagline = 'Spark genuine connections';
 
   // Supabase Configuration
-  // Users can put their Supabase URL and anon key here or via environment variables
-  static const String defaultSupabaseUrl = 'https://your-project.supabase.co';
-  static const String defaultSupabaseAnonKey = 'your-anon-key';
+  static const String defaultSupabaseUrl =
+      'https://kwhklzevjkaqrzrufgyd.supabase.co';
+  static const String defaultSupabaseAnonKey =
+      'sb_publishable_M5TbaPxagaErnCsO4BOK7w_CcXlxr-7';
 
   // Storage Keys
   static const String prefsDemoModeKey = 'crush_demo_mode_enabled';

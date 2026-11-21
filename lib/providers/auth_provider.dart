@@ -28,7 +28,8 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     final prefs = await SharedPreferences.getInstance();
-    _isDemoMode = prefs.getBool(AppConstants.prefsDemoModeKey) ?? true;
+    final hasRealKeys = !AppConstants.defaultSupabaseUrl.contains('your-project');
+    _isDemoMode = prefs.getBool(AppConstants.prefsDemoModeKey) ?? !hasRealKeys;
     _supabaseService.enableMockMode(_isDemoMode);
 
     _currentProfile = await _supabaseService.getCurrentUserProfile();

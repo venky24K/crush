@@ -62,8 +62,12 @@ class SupabaseService {
   }
 
   Future<ProfileModel?> getCurrentUserProfile() async {
-    if (_useMockMode || client == null || client?.auth.currentUser == null) {
+    if (_useMockMode) {
       return MockDataService.currentUser;
+    }
+
+    if (client == null || client?.auth.currentUser == null) {
+      return null;
     }
 
     try {
