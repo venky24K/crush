@@ -75,7 +75,11 @@ class DiscoveryProvider extends ChangeNotifier {
 
     final targetProfile = _profiles.removeAt(0);
     _swipedHistory.add(targetProfile);
-    notifyListeners();
+
+    // ⚡ PERF: Do NOT call notifyListeners() here.
+    // The CardSwiper drives its own animation — notifying mid-swipe causes
+    // the entire screen to rebuild while the card is still animating, causing
+    // the stutter. We only notify AFTER the async work is done.
 
     final isMatch = await _supabaseService.recordSwipe(
       swiperId: currentUserId,
@@ -85,8 +89,10 @@ class DiscoveryProvider extends ChangeNotifier {
 
     if (isMatch) {
       _lastMatchedProfile = targetProfile;
-      notifyListeners();
     }
+
+    // Single notify after everything settles
+    notifyListeners();
 
     return isMatch;
   }

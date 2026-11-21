@@ -48,7 +48,9 @@ class _SwipeCardState extends State<SwipeCard> {
 
     final safeIndex = _currentPhotoIndex.clamp(0, photos.length - 1);
 
-    return ClipRRect(
+    // ⚡ PERF: RepaintBoundary prevents the card from repainting sibling cards
+    return RepaintBoundary(
+      child: ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: Container(
         color: AppColors.surface,
@@ -59,14 +61,10 @@ class _SwipeCardState extends State<SwipeCard> {
             CachedNetworkImage(
               imageUrl: photos[safeIndex],
               fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
+              // ⚡ PERF: Static ColoredBox instead of CircularProgressIndicator
+              // — avoids running a spinner animation on every background card
+              placeholder: (context, url) => const ColoredBox(
                 color: AppColors.surfaceLight,
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                    strokeWidth: 2,
-                  ),
-                ),
               ),
               errorWidget: (context, url, error) => Container(
                 color: AppColors.surfaceLight,
@@ -273,6 +271,7 @@ class _SwipeCardState extends State<SwipeCard> {
           ],
         ),
       ),
+    ),
     );
   }
 }
