@@ -1,6 +1,5 @@
 -- Supabase Database Schema for "Crush" Dating App
--- Enable PostGIS for geolocation if needed
--- create extension if not exists postgis;
+-- Completely idempotent: safe to run multiple times without errors!
 
 -- 1. Profiles Table
 create table if not exists public.profiles (
@@ -18,6 +17,7 @@ create table if not exists public.profiles (
     latitude double precision,
     longitude double precision,
     city text default '',
+    distance_km double precision default 5.0,
     min_age_preference integer default 18,
     max_age_preference integer default 50,
     max_distance_km integer default 50,
@@ -29,16 +29,19 @@ create table if not exists public.profiles (
 -- Row Level Security (RLS) for Profiles
 alter table public.profiles enable row level security;
 
+drop policy if exists "Profiles are viewable by authenticated users" on public.profiles;
 create policy "Profiles are viewable by authenticated users"
 on public.profiles for select
 to authenticated
 using (true);
 
+drop policy if exists "Users can insert their own profile" on public.profiles;
 create policy "Users can insert their own profile"
 on public.profiles for insert
 to authenticated
 with check (auth.uid() = id);
 
+drop policy if exists "Users can update their own profile" on public.profiles;
 create policy "Users can update their own profile"
 on public.profiles for update
 to authenticated
@@ -56,11 +59,13 @@ create table if not exists public.swipes (
 
 alter table public.swipes enable row level security;
 
+drop policy if exists "Users can see their own swipes" on public.swipes;
 create policy "Users can see their own swipes"
 on public.swipes for select
 to authenticated
 using (auth.uid() = swiper_id);
 
+drop policy if exists "Users can insert their own swipes" on public.swipes;
 create policy "Users can insert their own swipes"
 on public.swipes for insert
 to authenticated
@@ -79,6 +84,7 @@ create table if not exists public.matches (
 
 alter table public.matches enable row level security;
 
+drop policy if exists "Users can view matches they are a part of" on public.matches;
 create policy "Users can view matches they are a part of"
 on public.matches for select
 to authenticated
@@ -96,6 +102,7 @@ create table if not exists public.messages (
 
 alter table public.messages enable row level security;
 
+drop policy if exists "Users can view messages for their matches" on public.messages;
 create policy "Users can view messages for their matches"
 on public.messages for select
 to authenticated
@@ -107,6 +114,7 @@ using (
     )
 );
 
+drop policy if exists "Users can insert messages into their matches" on public.messages;
 create policy "Users can insert messages into their matches"
 on public.messages for insert
 to authenticated
@@ -176,21 +184,42 @@ create trigger on_new_message_trigger
 after insert on public.messages
 for each row execute function public.handle_new_message();
 
--- Enable Realtime for Messages & Matches
-alter publication supabase_realtime add table public.messages;
-alter publication supabase_realtime add table public.matches;
+-- 7. Enable Realtime for Messages & Matches safely
+do $$
+begin
+    if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'messages') then
+        alter publication supabase_realtime add table public.messages;
+    end if;
+    if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'matches') then
+        alter publication supabase_realtime add table public.matches;
+    end if;
+end $$;
 
--- Storage bucket for profile pictures
+-- 8. Storage bucket for profile pictures
 insert into storage.buckets (id, name, public)
 values ('avatars', 'avatars', true)
 on conflict (id) do nothing;
 
+drop policy if exists "Avatar images are publicly accessible" on storage.objects;
 create policy "Avatar images are publicly accessible"
 on storage.objects for select
 to public
 using (bucket_id = 'avatars');
 
+drop policy if exists "Users can upload their own avatars" on storage.objects;
 create policy "Users can upload their own avatars"
 on storage.objects for insert
 to authenticated
 with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "Users can update their own avatars" on storage.objects;
+create policy "Users can update their own avatars"
+on storage.objects for update
+to authenticated
+using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "Users can delete their own avatars" on storage.objects;
+create policy "Users can delete their own avatars"
+on storage.objects for delete
+to authenticated
+using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
