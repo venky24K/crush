@@ -1,6 +1,6 @@
 # 🗺️ Crush - Product & Engineering Roadmap
 
-This roadmap outlines the completed milestones, current capabilities, and future vision for **Crush** — from core swipe mechanics to AI-assisted matching, safety systems, and global monetization.
+This roadmap outlines the completed milestones, current capabilities, and future vision for **Crush** — from core swipe mechanics to comprehensive account onboarding, AI-assisted matching, safety systems, and global monetization.
 
 ---
 
@@ -9,7 +9,7 @@ This roadmap outlines the completed milestones, current capabilities, and future
 ```mermaid
 flowchart LR
     A["Phase 1: Core MVP & Backend (Done)"] --> B["Phase 1.5: Brand, UI/UX & Perf (Done)"]
-    B --> C["Phase 2: Auth, Geo & Push (Next)"]
+    B --> C["Phase 2: Account Creation, Auth & Geo (Next)"]
     C --> D["Phase 3: Monetization & Revenue"]
     D --> E["Phase 4: AI & Trust Safety"]
 ```
@@ -70,17 +70,45 @@ flowchart LR
 
 ---
 
-## 🚀 Phase 2: Enhanced Identity, Geo & Push *(In Progress)*
+## 🚀 Phase 2: Production Account Creation, Auth & Geolocation *(Next Up)*
 
-- [ ] **Sign in with Apple (Mandatory for App Store)**
-  - Native Apple Sign-In flow via `sign_in_with_apple`.
-  - Supabase Auth Apple provider integration with nonce verification.
-- [ ] **Sign in with Google (OAuth2)**
-  - Google Sign-In SDK configuration for iOS and Android.
-  - One-tap sign-in and profile pre-fill (name, photo, email).
-- [ ] **Phone Number (SMS) Authentication**
-  - Twilio / MessageBird SMS OTP verification via Supabase Auth.
-  - Auto-SMS code retrieval and keypad formatting.
+### 👤 2.1 Complete Account Creation & Guided Onboarding Flow
+
+- [ ] **Multi-Provider Authentication Gateways**
+  - **Sign in with Apple**: Native Sign-In flow with Apple Developer Service ID and Supabase Apple Auth (mandatory for iOS App Store approval).
+  - **Sign in with Google**: One-tap OAuth 2.0 flow with profile pre-fill (name, photo, email).
+  - **Phone Number (SMS OTP)**: Phone number verification with 6-digit auto-fill via Twilio / MessageBird on Supabase.
+  - **Email / Password**: With format validation and instant sign-up confirmation.
+- [ ] **Multi-Step Guided Profile Creation Funnel (Interactive Wizard)**
+  - **Step 1: First Name**: Required display name (locked post-creation to prevent catfishing and impersonation).
+  - **Step 2: Birthday & Age Verification**:
+    - Cupertino/Material date picker enforcing strict 18+ age verification check.
+    - Real-time age display with legal compliance (COPPA & App Store guidelines).
+  - **Step 3: Identity & Attraction**:
+    - My Gender: *Woman, Man, Non-Binary, Custom*.
+    - Show Me (Dating Preference): *Women, Men, Everyone*.
+  - **Step 4: Relationship Goals / Intentions**:
+    - Select primary intention: *Long-term partner, Casual dating, Marriage-minded, New friends, Still figuring it out*.
+  - **Step 5: Photo Upload (Minimum 2 Photos Required)**:
+    - 6-slot photo grid with drag-and-drop reordering.
+    - Integrated photo cropper & compression before upload to Supabase Storage `avatars/<uid>/`.
+    - Primary avatar selector badge (*"Main photo displayed on cards"*).
+  - **Step 6: Interests & Passions (Select 5+)**:
+    - Searchable categorized interest chip selector (Creativity, Sports, Travel, Food & Drink, Entertainment, Pets).
+  - **Step 7: Location Setup & Geocoding**:
+    - One-tap GPS permission prompt.
+    - Automatic reverse-geocoding into `city` / neighborhood for display on card headers.
+  - **Step 8: Bio & Personality Prompts (Hinge-Style)**:
+    - Choose 2–3 fun prompt cards (*"A typical Sunday for me looks like...", "My biggest green flag is...", "Dating me is like..."*).
+  - **Step 9: Community Pledge & Rules**:
+    - Mandatory 4-point anti-harassment, authenticity, and respect pledge before entering the discovery deck.
+- [ ] **Progressive Draft Saving & Resumption**
+  - Add `onboarding_completed: boolean default false` column to `public.profiles`.
+  - Save progress incrementally at each step so users who exit can resume where they left off.
+  - `AuthGate` router directs users to complete onboarding before accessing the main feed.
+
+### 📍 2.2 Geolocation & Push Notifications
+
 - [ ] **Live Geolocation & PostGIS Distance Queries**
   - Device GPS coordinate capture via `geolocator` with permission dialogs.
   - PostgreSQL PostGIS queries (`ST_DWithin`, `ST_DistanceSphere`) to calculate exact distances and filter profiles dynamically within the user's selected radius.
@@ -136,7 +164,8 @@ flowchart LR
 
 | Priority | Feature | Complexity | Impact | Target Release |
 | :--- | :--- | :--- | :--- | :--- |
-| **P0** | Apple & Google Sign-In | Medium | Mandatory for App Store approval | v1.1 |
+| **P0** | Multi-Step Guided Account Creation & Onboarding | High | Essential user acquisition & profile quality | v1.1 |
+| **P0** | Sign in with Apple & Google OAuth | Medium | Mandatory for App Store approval | v1.1 |
 | **P0** | Push Notifications (APNs / FCM) | Medium | Core retention and daily active usage | v1.1 |
 | **P1** | Live GPS & PostGIS Distance Queries | Medium | Discovery relevance and real matches | v1.2 |
 | **P1** | RevenueCat Subscriptions (Crush Gold) | High | Direct monetization & recurring revenue | v2.0 |
