@@ -170,7 +170,7 @@ class UserProfileScreen extends StatelessWidget {
                           'See who liked you & unlimited rewinds',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.white70,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],

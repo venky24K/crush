@@ -10,17 +10,18 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,          // ← switched to light
       fontFamily: fontFamily,
       scaffoldBackgroundColor: AppColors.background,
       primaryColor: AppColors.primary,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: ColorScheme.light(
         primary: AppColors.primary,
-        secondary: AppColors.secondary,
+        secondary: AppColors.primaryAccent,
         surface: AppColors.surface,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: AppColors.textPrimary,
+        outline: AppColors.cardBorder,
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
@@ -34,6 +35,7 @@ class AppTheme {
           letterSpacing: -0.5,
         ),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        surfaceTintColor: Colors.transparent,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -48,8 +50,8 @@ class AppTheme {
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
-          elevation: 4,
-          shadowColor: AppColors.primary.withValues(alpha: 0.4),
+          elevation: 2,
+          shadowColor: AppColors.primary.withValues(alpha: 0.3),
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -57,11 +59,11 @@ class AppTheme {
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textMuted,
         type: BottomNavigationBarType.fixed,
-        elevation: 10,
+        elevation: 8,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: AppColors.surfaceLight,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.cardBorder),
@@ -78,13 +80,26 @@ class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.surfaceLight,
         labelStyle: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: const BorderSide(color: AppColors.cardBorder),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surface,
+        elevation: 1,
+        shadowColor: AppColors.primary.withValues(alpha: 0.08),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.cardBorder),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: AppColors.cardBorder,
+        thickness: 1,
       ),
     );
   }

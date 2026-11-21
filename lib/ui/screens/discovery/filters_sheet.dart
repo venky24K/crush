@@ -49,7 +49,7 @@ class _FiltersSheetState extends State<FiltersSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: AppColors.cardBorder,
                 borderRadius: BorderRadius.circular(8),
               ),
             ),

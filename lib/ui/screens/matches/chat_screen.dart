@@ -349,7 +349,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Text(
               timeStr,
               style: TextStyle(
-                color: isMe ? Colors.white70 : AppColors.textMuted,
+                color: isMe ? Colors.white.withValues(alpha: 0.75) : AppColors.textMuted,
                 fontSize: 10,
               ),
             ),

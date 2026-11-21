@@ -142,9 +142,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           },
                           child: Container(
                             padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.black54,
+                              color: Color(0x99000000), // semi-transparent black
                             ),
                             child: const Icon(Icons.close, color: Colors.white, size: 16),
                           ),

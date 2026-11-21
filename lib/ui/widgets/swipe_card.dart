@@ -245,10 +245,10 @@ class _SwipeCardState extends State<SwipeCard> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black45,
+                              color: Colors.black38,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Colors.white24,
+                                color: AppColors.cardBorder,
                                 width: 0.8,
                               ),
                             ),

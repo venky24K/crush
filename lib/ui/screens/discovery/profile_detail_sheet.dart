@@ -33,7 +33,7 @@ class ProfileDetailSheet extends StatelessWidget {
               width: 44,
               height: 5,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: AppColors.cardBorder,
                 borderRadius: BorderRadius.circular(10),
               ),
             ),

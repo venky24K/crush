@@ -12,13 +12,13 @@ import 'ui/screens/home_navigation_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set immersive dark status bar & navigation bar
+  // Set light status bar & navigation bar for warm ivory theme
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF0F0E17),
-      systemNavigationBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.dark,          // dark icons on light bg
+      systemNavigationBarColor: Color(0xFFFFF8F2),
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 

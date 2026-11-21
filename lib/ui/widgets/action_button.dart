@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:crush/core/constants/app_colors.dart';
 
 class ActionButton extends StatefulWidget {
   final IconData icon;
@@ -65,7 +66,7 @@ class _ActionButtonState extends State<ActionButton>
           height: effectiveSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color(0xFF1E1E28),
+            color: AppColors.surface,
             boxShadow: [
               BoxShadow(
                 color: widget.color.withValues(alpha: 0.25),
