@@ -367,28 +367,33 @@ class _ChatScreenState extends State<ChatScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.person_outline, color: AppColors.textPrimary),
-              title: const Text('View Profile'),
-              onTap: () => Navigator.pop(ctx),
-            ),
-            ListTile(
-              leading: const Icon(Icons.notifications_off_outlined, color: AppColors.textPrimary),
-              title: const Text('Mute Notifications'),
-              onTap: () => Navigator.pop(ctx),
-            ),
-            ListTile(
-              leading: const Icon(Icons.block_flipped, color: AppColors.nope),
-              title: const Text('Unmatch & Block', style: TextStyle(color: AppColors.nope)),
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.pop(context);
-              },
-            ),
-          ],
+        // Material ensures ListTile ink splashes are visible over
+        // the bottom sheet's surface background color.
+        child: Material(
+          color: AppColors.surface,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.person_outline, color: AppColors.textPrimary),
+                title: const Text('View Profile'),
+                onTap: () => Navigator.pop(ctx),
+              ),
+              ListTile(
+                leading: const Icon(Icons.notifications_off_outlined, color: AppColors.textPrimary),
+                title: const Text('Mute Notifications'),
+                onTap: () => Navigator.pop(ctx),
+              ),
+              ListTile(
+                leading: const Icon(Icons.block_flipped, color: AppColors.nope),
+                title: const Text('Unmatch & Block', style: TextStyle(color: AppColors.nope)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

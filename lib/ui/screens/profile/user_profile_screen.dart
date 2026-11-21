@@ -267,7 +267,12 @@ class UserProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.cardBorder),
       ),
-      child: ListTile(
+      // Material is required so ListTile ink splashes paint correctly
+      // on top of the Container's background color.
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -295,6 +300,7 @@ class UserProfileScreen extends StatelessWidget {
             const Icon(Icons.arrow_forward_ios_rounded,
                 color: AppColors.textMuted, size: 16),
         onTap: onTap,
+      ),
       ),
     );
   }
