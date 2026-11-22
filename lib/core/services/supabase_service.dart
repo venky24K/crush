@@ -52,6 +52,8 @@ class SupabaseService {
       return await client!.auth.signInWithOAuth(
         provider,
         redirectTo: kIsWeb ? null : AppConstants.authRedirectUri,
+        authScreenLaunchMode:
+            kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication,
       );
     } catch (e) {
       debugPrint('[SupabaseService] OAuth error ($provider): $e');

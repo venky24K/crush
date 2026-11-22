@@ -26,6 +26,24 @@ class AuthProvider extends ChangeNotifier {
     _currentProfile = await _supabaseService.getCurrentUserProfile();
     _isAuthenticated = _currentProfile != null;
 
+    // Listen to real-time Supabase auth state changes (OAuth redirects, token refresh, sign out)
+    _supabaseService.client?.auth.onAuthStateChange.listen((data) async {
+      final event = data.event;
+      if (event == AuthChangeEvent.signedIn ||
+          event == AuthChangeEvent.userUpdated ||
+          event == AuthChangeEvent.tokenRefreshed) {
+        _currentProfile = await _supabaseService.getCurrentUserProfile();
+        _isAuthenticated = _currentProfile != null;
+        _isLoading = false;
+        notifyListeners();
+      } else if (event == AuthChangeEvent.signedOut) {
+        _currentProfile = null;
+        _isAuthenticated = false;
+        _isLoading = false;
+        notifyListeners();
+      }
+    });
+
     _isLoading = false;
     notifyListeners();
   }
