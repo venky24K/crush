@@ -1,0 +1,3 @@
+# This file is used by Shorebird to configure your app for code push.
+# Run `shorebird init` to associate this app with your Shorebird account.
+app_id: pending_init

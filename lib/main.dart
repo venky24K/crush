@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'core/constants/app_theme.dart';
 import 'core/services/supabase_service.dart';
 import 'providers/auth_provider.dart';
@@ -34,6 +35,24 @@ void main() async {
   FlutterNativeSplash.remove();
 
   runApp(const CrushApp());
+
+  // Check for Shorebird over-the-air patches in the background
+  _checkForShorebirdUpdates();
+}
+
+final _shorebirdUpdater = ShorebirdUpdater();
+
+void _checkForShorebirdUpdates() {
+  _shorebirdUpdater.checkForUpdate().then((status) {
+    if (status == UpdateStatus.outdated) {
+      debugPrint('[Shorebird] New patch available. Downloading in background...');
+      _shorebirdUpdater.update().then((_) {
+        debugPrint('[Shorebird] Patch downloaded! Will apply on next restart.');
+      });
+    }
+  }).catchError((e) {
+    debugPrint('[Shorebird] Update check notice: $e');
+  });
 }
 
 class CrushApp extends StatelessWidget {
