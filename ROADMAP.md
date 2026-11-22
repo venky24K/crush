@@ -10,10 +10,11 @@ This roadmap outlines completed milestones, current capabilities, and future vis
 flowchart LR
     A["Phase 1: Core MVP & Backend (Done)"] --> B["Phase 1.5: Brand & Light Theme (Done)"]
     B --> C["Phase 2: Native Auth, Storage & TestFlight (Done)"]
-    C --> D["Phase 3: Page-by-Page UX Polish (Current)"]
-    D --> E["Phase 4: Notifications & Geolocation"]
-    E --> F["Phase 5: Subscriptions & Monetization"]
-    F --> G["Phase 6: AI Matching & Trust Safety"]
+    C --> D["Phase 2.5: Cloud Storage & Push Notifications (Done)"]
+    D --> E["Phase 3: Page-by-Page UX Polish (Current)"]
+    E --> F["Phase 4: Geolocation & Deep Chat"]
+    F --> G["Phase 5: Subscriptions & Monetization"]
+    G --> H["Phase 6: AI Matching & Trust Safety"]
 ```
 
 ---
@@ -44,19 +45,20 @@ flowchart LR
   - Custom **crush** logo typography featuring a soft coral heart nested inside the `"u"`.
   - Master high-res transparent wordmark (`logo_wordmark.png`).
   - Full suite of iOS App Icons (15 resolutions in `AppIcon.appiconset`) and Android mipmap launcher icons.
-- [x] **Flutter Native Splash Screen**
+- [x] **Flutter Native Splash Screen & Animated In-App Splash**
   - Integrated `flutter_native_splash` for instant native app launch on iOS and Android.
-  - Branded launch screen on Warm Ivory (`#FFF8F2`) background with centered wordmark.
+  - Custom animated `SplashScreen` with heartbeat pulsing heart, ambient glow, and tagline reveal.
+  - Smart auth-state routing into `AuthGate`.
 - [x] **Crisp High-Contrast Light Theme Overhaul**
   - Switched to clean, modern, high-contrast light theme:
-    - **Background**: Pure `#FFFFFF` for crisp readability.
+    - **Background**: Pure `#FFFFFF` and Warm Ivory (`#FFF8F2`).
     - **Containers & Search**: `#F3F4F6` with subtle `#E5E7EB` borders.
     - **Typography**: Deep Charcoal `#111827` (Headings) and Slate Grey `#4B5563` (Subtitles/Bios).
     - **Brand Accent**: Punchy Peach-Coral `#FF5364` on action buttons, badges, and active tabs.
-- [x] **60 FPS Swiping & Rendering Optimization**
-  - Eliminated swipe stutter; granular `Selector` rebuild scopes for card deck state.
-  - Added `RepaintBoundary` wrappers around swipe cards and app bar components.
-  - Fixed Material layering and invisible ink splash assertions across list tiles and bottom sheets.
+- [x] **Complete Purge of Mock Data & Accounts**
+  - Removed all mock accounts (`alex@crush.app`, `maya`, `chloe`, `elena`, `sarah`, `zara`).
+  - Deleted `supabase/seed.sql` and removed all sample photo buttons and demo fallbacks.
+  - 100% real Supabase database and authentication flow.
 
 ---
 
@@ -64,7 +66,8 @@ flowchart LR
 
 - [x] **Native Authentication Gateways**
   - **Sign in with Apple**: Native iOS bottom sheet with Face ID / Touch ID, SHA-256 cryptographic nonce hashing, and user metadata capture.
-  - **Sign in with Google**: Native Google Sign-In SDK (1-tap sheet) with in-app browser OAuth fallback.
+  - **Sign in with Google**: Native Google Sign-In SDK (1-tap sheet) with automatic cache cleanup (`signOut` on retry) and browser OAuth fallback.
+  - **Email & Password Authentication**: Polished login card with real-time field validation, focus-node chaining, and error feedback.
   - **Reactive 3-State Auth Machine**: Clean separation between Unauthenticated &rarr; Needs Onboarding &rarr; Fully Authenticated (`HomeNavigationScreen`).
 - [x] **9-Step Guided Onboarding Flow**
   - First Name identity gate (prevents impersonation).
@@ -76,13 +79,6 @@ flowchart LR
   - Location setup with automatic pre-fill.
   - Bio, occupation, and school configuration.
   - 4-point community safety pledge.
-- [x] **Universal Photo Engine (`CrushImage` & `crushImageProvider`)**
-  - Dual support for local device file paths (`/var/mobile/...`, `file://`) and remote Supabase CDN URLs (`https://...`).
-  - Elimination of broken image red "X" errors with branded loading shimmers and fallback avatars.
-  - Interactive photo picker on Edit Profile (Gallery, Camera, Sample photo).
-- [x] **Cloud Storage & Database Infrastructure**
-  - Supabase Storage `avatars` bucket configured, verified public, and connected to upload pipelines.
-  - Realtime enabled on `messages` table for instant live message delivery.
 - [x] **App Store & Google Play Policy Compliance**
   - Apple Guideline 5.1.1(v) permanent in-app **Account Deletion** flow with confirmation dialog.
   - Apple Guideline 1.2 **Block & Report User** safety controls in chat & profile details.
@@ -100,15 +96,40 @@ flowchart LR
 
 ---
 
+## ✅ Phase 2.5: Cloud Storage, Real-Time Sync & Push Notifications *(Completed)*
+
+- [x] **Supabase Storage Public `avatars` Bucket**
+  - Bucket initialized and made public with authenticated upload/update RLS policies.
+  - `uploadProfilePhoto()` updated with strict MIME detection (`image/jpeg`, `image/png`, `image/webp`) and `FileOptions(upsert: true)`.
+  - Purged local file paths from remote database persistence — only verified CDN URLs saved.
+- [x] **Real-Time Match Alerts & Live Chat Delivery**
+  - Subscribed `ChatProvider` to Supabase Realtime WebSocket changes on `public.matches`.
+  - Floating in-app match notification banner: *"🎉 IT'S A CRUSH! You and [Name] liked each other!"* with direct "Say Hi 👋" chat shortcut.
+  - Live unread badge count updates on the bottom navigation bar.
+  - Real-time message streaming inside `ChatScreen` with auto-scroll on arrival.
+- [x] **Apple Push Notifications (APNs) & Firebase Cloud Messaging (FCM)**
+  - Apple `.p8` Push Notification Authentication Key uploaded to Firebase Console for both Development and Production.
+  - Bundled `GoogleService-Info.plist` and configured Xcode build resources.
+  - Added `aps-environment` to `Runner.entitlements` and `remote-notification` to `UIBackgroundModes` in `Info.plist`.
+  - Integrated `firebase_core` & `firebase_messaging` with `NotificationService` for permission prompts and device token syncing to Supabase `profiles.fcm_token`.
+- [x] **Swipe Card Image Performance & 0ms Loading**
+  - **4-Card Proactive Pre-Caching**: Pre-decodes upcoming 4 profiles into memory ahead of time.
+  - **In-Card Story Pre-Caching**: All photos of the active card pre-cached on mount for instant 0ms photo taps.
+  - **Downsampled Memory Decoding (`memCacheWidth: 1080`)**: 90% drop in RAM per image (~45 MB &rarr; ~3 MB), eliminating swipe gesture jank and maintaining 60/120 FPS.
+  - **Warm Skeleton Placeholder**: Replaced blank boxes with a warm ivory gradient skeleton and subtle brand heart watermark, plus 200ms smooth cross-fade.
+
+---
+
 ## 🎨 Phase 3: Page-by-Page UX Polish & Micro-Interactions *(Current Sprint)*
 
 This phase elevates Crush from a working prototype into a consumer-grade dating app with fluid physics, haptics, and delight across each individual screen:
 
 ### 🃏 3.1 Discovery & Swipe Card Screen
-- [ ] **Instagram-Style Story Photo Navigation**: Tap left 30% of card for previous photo, tap right 70% for next photo, with top progress bars.
+- [x] **0ms Instant Photo Switching**: Pre-cached photo carousel with story progress indicators.
+- [x] **Smooth Memory Downsampled Cards**: 1080p memory decoding eliminating swipe stutter.
 - [ ] **Swipe Haptic Feedback**: Light haptic tick on drag threshold; crisp tactile feedback on Like, Nope, and Super Like (`HapticFeedback.mediumImpact()`).
 - [ ] **Rewind / Undo Action**: Functional rewind restoring the previously swiped card back to the top of the deck.
-- [ ] **Super Like Particle Burst**: Animated gold/blue star burst with micro-confetti on Super Like.
+- [ ] **Super Like Particle Burst**: Animated gold/coral star burst with micro-confetti on Super Like.
 - [ ] **Match Celebration Screen**: Synchronized dual-photo pulse animation with instant "Send a message" input field.
 
 ### 📝 3.2 Onboarding Flow (9 Steps)
@@ -117,6 +138,7 @@ This phase elevates Crush from a working prototype into a consumer-grade dating 
 - [ ] **Animated Step Indicator**: Smooth sliding progress bar with percentage and step transitions.
 
 ### 💬 3.3 Matches & Real-Time Chat
+- [x] **Real-Time Live Chat**: Instant message arrival via Supabase Realtime without manual refresh.
 - [ ] **Interactive Conversation Starters**: Tappable icebreaker question pills in empty chats that auto-fill the input field.
 - [ ] **Online Activity Indicators & Read Receipts**: Real-time "Active now" badges and `✓✓` read receipts on delivered messages.
 - [ ] **In-Chat Photo Sharing**: Camera and gallery attachments directly inside private conversations.
@@ -128,19 +150,17 @@ This phase elevates Crush from a working prototype into a consumer-grade dating 
 - [ ] **Discovery Preference Controls**: Age range dual-slider and distance radius slider saving directly to Supabase profile preferences.
 
 ### 🔐 3.5 Login & Welcome Gateway
+- [x] **Polished Real-Time Validation**: Field-level validation on email/password with styled error snackbars.
+- [x] **Focus-Node Chaining**: Seamless keyboard return key navigation (Email &rarr; Password &rarr; Submit).
 - [ ] **Ambient Motion Background**: Subtle floating coral/warm ivory gradient or gentle heart particles.
 - [ ] **Spring Micro-Interactions**: Tactile button press bounce on Apple, Google, and Email sign-in buttons.
 
 ---
 
-## 📍 Phase 4: Push Notifications & Geolocation *(Next Up)*
+## 📍 Phase 4: Geolocation & Deep Chat *(Next Up)*
 
-- [ ] **Push Notifications (APNs / FCM)**
-  - Firebase Cloud Messaging integration for iOS (APNs) and Android.
-  - Triggered push alerts on:
-    - Mutual match (*"It's a Match! Say hello to [Name]"*).
-    - New chat message.
-    - Super Like received.
+- [x] **Push Notifications (APNs / FCM)**: Client SDK, tokens, credentials, and background modes configured.
+- [ ] **Supabase Edge Function Push Trigger**: Database webhook firing FCM HTTP v1 notifications on new matches and messages.
 - [ ] **Live Geolocation & PostGIS Distance Queries**
   - Device GPS coordinate capture via `geolocator` with permission dialogs.
   - PostgreSQL PostGIS queries (`ST_DWithin`, `ST_DistanceSphere`) to calculate exact distances and filter profiles dynamically within the user's selected radius.
@@ -190,12 +210,14 @@ This phase elevates Crush from a working prototype into a consumer-grade dating 
 
 | Priority | Feature | Complexity | Impact | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **P0** | Native Sign in with Apple & Google OAuth | Medium | Essential for Launch | ✅ Live on TestFlight |
-| **P0** | 9-Step Guided Onboarding & Storage | High | User Acquisition & Quality | ✅ Live on TestFlight |
-| **P0** | App Store Compliance (Delete, Block/Report, Legal) | Medium | Mandatory for App Store | ✅ Live on TestFlight |
-| **P0** | Discovery Story Photo Taps & Swipe Haptics | Medium | Core App Feel & Delight | 🎨 In Progress |
+| **P0** | Native Sign in with Apple & Google OAuth | Medium | Essential for Launch | ✅ Completed |
+| **P0** | Supabase Cloud Photo Storage (`avatars`) | Medium | Core App Functionality | ✅ Completed |
+| **P0** | Push Notifications (APNs / FCM Client & Config) | Medium | Daily Active Retention | ✅ Completed |
+| **P0** | In-App Real-Time Match Alerts & Live Chat | Medium | User Engagement | ✅ Completed |
+| **P0** | Swipe Deck 0ms Pre-Caching & Downsampling | Low | Core Swiping Feel | ✅ Completed |
+| **P0** | Swipe Haptics & Visual Feedback | Low | Tactile Delight | 🎨 In Progress |
 | **P0** | Chat Icebreaker Chips & Read Receipts | Low | Retention & Conversation Rate | 🎨 In Progress |
-| **P1** | Push Notifications (APNs / FCM) | Medium | Daily Active Retention | 📍 Phase 4 |
+| **P1** | Supabase Edge Function Push Trigger | Medium | Lock Screen Engagement | 📍 Phase 4 |
 | **P1** | Live GPS & PostGIS Distance Queries | Medium | Discovery Relevance | 📍 Phase 4 |
 | **P1** | RevenueCat Subscriptions (Crush Gold) | High | Direct Monetization | 💎 Phase 5 |
 | **P2** | Selfie Liveness Verification Badge | Medium | Trust & Anti-Bot Safety | 🛡️ Phase 6 |
