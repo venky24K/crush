@@ -62,28 +62,20 @@ class NotificationService {
         debugPrint('[NotificationService] APNs Token received: ${apnsToken != null}');
       }
 
-      // Listen for registration tokens
-      messaging.onRegistered.listen((token) {
-        _fcmToken = token;
-        debugPrint('[NotificationService] FCM Token registered: $token');
-        _syncCurrentProfileToken(token);
-      });
-
-      // Register device with FCM
+      // Retrieve FCM device token
       try {
-        await messaging.register();
-      } catch (e) {
-        debugPrint('[NotificationService] Register note: $e');
-      }
-
-      // Fallback read for immediate token
-      try {
-        // ignore: deprecated_member_use
-        _fcmToken ??= await messaging.getToken();
+        _fcmToken = await messaging.getToken();
         debugPrint('[NotificationService] FCM Token: $_fcmToken');
       } catch (e) {
         debugPrint('[NotificationService] Token read note: $e');
       }
+
+      // Listen for token refreshes
+      messaging.onTokenRefresh.listen((newToken) {
+        _fcmToken = newToken;
+        debugPrint('[NotificationService] FCM Token refreshed: $newToken');
+        _syncCurrentProfileToken(newToken);
+      });
 
       // Setup foreground handler
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -106,7 +98,6 @@ class NotificationService {
     if (userId.isEmpty) return;
 
     try {
-      // ignore: deprecated_member_use
       _fcmToken ??= await FirebaseMessaging.instance.getToken();
       if (_fcmToken != null && _supabaseService.client != null) {
         await _supabaseService.client!
