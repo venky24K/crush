@@ -61,6 +61,21 @@ class SupabaseService {
     _useMockMode = enable;
   }
 
+  Future<bool> signInWithOAuth(OAuthProvider provider) async {
+    if (_useMockMode || client == null) {
+      return true;
+    }
+    try {
+      return await client!.auth.signInWithOAuth(
+        provider,
+        redirectTo: kIsWeb ? null : 'crush://login-callback',
+      );
+    } catch (e) {
+      debugPrint('[SupabaseService] OAuth error ($provider): $e');
+      return false;
+    }
+  }
+
   Future<ProfileModel?> getCurrentUserProfile() async {
     if (_useMockMode) {
       return MockDataService.currentUser;

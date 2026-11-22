@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:crush/core/constants/app_constants.dart';
 import 'package:crush/core/services/mock_data_service.dart';
 import 'package:crush/core/services/supabase_service.dart';
@@ -86,6 +87,115 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
     return false;
+  }
+
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      if (_isDemoMode) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+
+      final success =
+          await _supabaseService.signInWithOAuth(OAuthProvider.google);
+      _currentProfile = await _supabaseService.getCurrentUserProfile();
+      _isAuthenticated = _currentProfile != null;
+      _isLoading = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      debugPrint('[AuthProvider] Google Sign-In error: $e');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> signInWithApple() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      if (_isDemoMode) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+
+      final success =
+          await _supabaseService.signInWithOAuth(OAuthProvider.apple);
+      _currentProfile = await _supabaseService.getCurrentUserProfile();
+      _isAuthenticated = _currentProfile != null;
+      _isLoading = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      debugPrint('[AuthProvider] Apple Sign-In error: $e');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> completeOnboarding({
+    required String fullName,
+    required DateTime birthDate,
+    required String gender,
+    required List<String> lookingFor,
+    required List<String> photos,
+    required List<String> interests,
+    String bio = '',
+    String occupation = '',
+    String city = 'San Francisco, CA',
+    String? email,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final userEmail = email ??
+          (_currentProfile?.email.isNotEmpty == true
+              ? _currentProfile!.email
+              : 'user@crush.app');
+
+      final userId = _supabaseService.client?.auth.currentUser?.id ??
+          'user_${DateTime.now().millisecondsSinceEpoch}';
+
+      final profile = ProfileModel(
+        id: userId,
+        email: userEmail,
+        fullName: fullName,
+        birthDate: birthDate,
+        gender: gender,
+        lookingFor: lookingFor,
+        bio: bio,
+        occupation: occupation,
+        city: city,
+        photos: photos,
+        interests: interests,
+      );
+
+      if (!_isDemoMode && _supabaseService.client != null) {
+        await _supabaseService.updateProfile(profile);
+      }
+
+      _currentProfile = profile;
+      _isAuthenticated = true;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('[AuthProvider] completeOnboarding error: $e');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<bool> signUpWithEmail({
