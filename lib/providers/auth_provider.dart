@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:crush/core/constants/app_constants.dart';
 import 'package:crush/core/services/supabase_service.dart';
 import 'package:crush/models/profile_model.dart';
 
@@ -9,11 +11,23 @@ class AuthProvider extends ChangeNotifier {
 
   ProfileModel? _currentProfile;
   bool _isLoading = false;
-  bool _isAuthenticated = false;
 
   ProfileModel? get currentProfile => _currentProfile;
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _isAuthenticated;
+
+  /// True if the user has an active Supabase auth session
+  bool get hasSession => _supabaseService.client?.auth.currentUser != null;
+
+  /// True if the user has a completed profile in public.profiles
+  bool get hasProfile => _currentProfile != null;
+
+  /// Fully authenticated (signed in AND profile exists in database)
+  bool get isAuthenticated => hasSession && hasProfile;
+
+  /// Authenticated in Supabase Auth (e.g. via Google/Apple) but needs to complete onboarding
+  bool get needsOnboarding => hasSession && !hasProfile;
+
+  User? get currentUser => _supabaseService.client?.auth.currentUser;
 
   AuthProvider() {
     _init();
@@ -23,29 +37,40 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _currentProfile = await _supabaseService.getCurrentUserProfile();
-    _isAuthenticated = _currentProfile != null;
+    try {
+      final user = _supabaseService.client?.auth.currentUser;
+      if (user != null) {
+        _currentProfile = await _supabaseService.getCurrentUserProfile();
+      } else {
+        _currentProfile = null;
+      }
+    } catch (e) {
+      debugPrint('[AuthProvider] _init error: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
 
     // Listen to real-time Supabase auth state changes (OAuth redirects, token refresh, sign out)
     _supabaseService.client?.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
+      debugPrint('[AuthProvider] onAuthStateChange event: $event');
+
       if (event == AuthChangeEvent.signedIn ||
           event == AuthChangeEvent.userUpdated ||
           event == AuthChangeEvent.tokenRefreshed) {
+        _isLoading = true;
+        notifyListeners();
+
         _currentProfile = await _supabaseService.getCurrentUserProfile();
-        _isAuthenticated = _currentProfile != null;
         _isLoading = false;
         notifyListeners();
       } else if (event == AuthChangeEvent.signedOut) {
         _currentProfile = null;
-        _isAuthenticated = false;
         _isLoading = false;
         notifyListeners();
       }
     });
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<bool> signInWithEmail(String email, String password) async {
@@ -63,7 +88,6 @@ class AuthProvider extends ChangeNotifier {
 
       if (authResponse.user != null) {
         _currentProfile = await _supabaseService.getCurrentUserProfile();
-        _isAuthenticated = _currentProfile != null;
         _isLoading = false;
         notifyListeners();
         return true;
@@ -81,16 +105,47 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+    // 1. Try Native Google Sign-In SDK (smooth native 1-tap sheet, no Safari app jump)
+    try {
+      final googleSignIn = GoogleSignIn(
+        clientId: Platform.isIOS ? AppConstants.googleIosClientId : null,
+        serverClientId: AppConstants.googleWebClientId,
+      );
+
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser != null) {
+        final googleAuth = await googleUser.authentication;
+        final idToken = googleAuth.idToken;
+        final accessToken = googleAuth.accessToken;
+
+        if (idToken != null) {
+          final res = await _supabaseService.client?.auth.signInWithIdToken(
+            provider: OAuthProvider.google,
+            idToken: idToken,
+            accessToken: accessToken,
+          );
+          if (res?.user != null) {
+            _currentProfile = await _supabaseService.getCurrentUserProfile();
+            _isLoading = false;
+            notifyListeners();
+            return true;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint(
+          '[AuthProvider] Native Google Sign-In notice: $e. Using in-app browser OAuth fallback...');
+    }
+
+    // 2. Fallback to Supabase OAuth with inAppBrowserView (clean modal sheet)
     try {
       final success =
           await _supabaseService.signInWithOAuth(OAuthProvider.google);
-      _currentProfile = await _supabaseService.getCurrentUserProfile();
-      _isAuthenticated = _currentProfile != null;
       _isLoading = false;
       notifyListeners();
       return success;
     } catch (e) {
-      debugPrint('[AuthProvider] Google Sign-In error: $e');
+      debugPrint('[AuthProvider] Google Sign-In OAuth error: $e');
       _isLoading = false;
       notifyListeners();
       return false;
@@ -104,8 +159,6 @@ class AuthProvider extends ChangeNotifier {
     try {
       final success =
           await _supabaseService.signInWithOAuth(OAuthProvider.apple);
-      _currentProfile = await _supabaseService.getCurrentUserProfile();
-      _isAuthenticated = _currentProfile != null;
       _isLoading = false;
       notifyListeners();
       return success;
@@ -160,7 +213,6 @@ class AuthProvider extends ChangeNotifier {
       }
 
       _currentProfile = profile;
-      _isAuthenticated = true;
       _isLoading = false;
       notifyListeners();
       return true;
@@ -207,7 +259,6 @@ class AuthProvider extends ChangeNotifier {
 
         await _supabaseService.updateProfile(newProfile);
         _currentProfile = newProfile;
-        _isAuthenticated = true;
         _isLoading = false;
         notifyListeners();
         return true;
@@ -233,11 +284,19 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    if (_supabaseService.client != null) {
-      await _supabaseService.client!.auth.signOut();
+    try {
+      if (_supabaseService.client != null) {
+        await _supabaseService.client!.auth.signOut();
+      }
+      try {
+        final googleSignIn = GoogleSignIn();
+        await googleSignIn.signOut();
+      } catch (_) {}
+    } catch (e) {
+      debugPrint('[AuthProvider] Sign out error: $e');
     }
     _currentProfile = null;
-    _isAuthenticated = false;
+    _isLoading = false;
     notifyListeners();
   }
 }

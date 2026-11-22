@@ -8,6 +8,7 @@ import 'providers/auth_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/discovery_provider.dart';
 import 'ui/screens/auth/login_screen.dart';
+import 'ui/screens/auth/onboarding_screen.dart';
 import 'ui/screens/home_navigation_screen.dart';
 
 void main() async {
@@ -65,16 +66,34 @@ class AuthGate extends StatelessWidget {
 
     if (authProvider.isLoading) {
       return const Scaffold(
+        backgroundColor: Color(0xFFFFFFFF),
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFFD297B)),
+          child: CircularProgressIndicator(color: Color(0xFFFF5364)),
         ),
       );
     }
 
+    // 1. Returning user: authenticated with profile -> Main App
     if (authProvider.isAuthenticated) {
       return const HomeNavigationScreen();
     }
 
+    // 2. New OAuth user: signed in via Google / Apple but profile not created yet -> Guided Onboarding
+    if (authProvider.needsOnboarding) {
+      final user = authProvider.currentUser;
+      final email = user?.email;
+      final name = user?.userMetadata?['full_name'] as String? ??
+          user?.userMetadata?['name'] as String?;
+      final provider = user?.appMetadata['provider'] as String? ?? 'google';
+
+      return OnboardingScreen(
+        authProvider: provider,
+        initialEmail: email,
+        initialName: name,
+      );
+    }
+
+    // 3. Not signed in -> Login Screen
     return const LoginScreen();
   }
 }

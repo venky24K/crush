@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:crush/core/constants/app_colors.dart';
 import 'package:crush/providers/auth_provider.dart';
 import 'package:crush/ui/screens/auth/onboarding_screen.dart';
@@ -46,54 +45,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleAppleOnboarding() async {
     final auth = context.read<AuthProvider>();
-    await auth.signInWithApple();
-    if (!mounted) return;
-
-    if (auth.isAuthenticated && auth.currentProfile != null) {
-      return;
-    }
-
-    final user = Supabase.instance.client.auth.currentUser;
-    final realEmail = user?.email;
-    final realName = user?.userMetadata?['full_name'] as String? ??
-        user?.userMetadata?['name'] as String?;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => OnboardingScreen(
-          authProvider: 'apple',
-          initialEmail: realEmail,
-          initialName: realName,
+    final success = await auth.signInWithApple();
+    if (!success && mounted && !auth.hasSession) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Apple sign-in was cancelled or could not be completed.'),
+          backgroundColor: AppColors.nope,
         ),
-      ),
-    );
+      );
+    }
   }
 
   void _handleGoogleOnboarding() async {
     final auth = context.read<AuthProvider>();
-    await auth.signInWithGoogle();
-    if (!mounted) return;
-
-    if (auth.isAuthenticated && auth.currentProfile != null) {
-      return;
-    }
-
-    final user = Supabase.instance.client.auth.currentUser;
-    final realEmail = user?.email;
-    final realName = user?.userMetadata?['full_name'] as String? ??
-        user?.userMetadata?['name'] as String?;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => OnboardingScreen(
-          authProvider: 'google',
-          initialEmail: realEmail,
-          initialName: realName,
+    final success = await auth.signInWithGoogle();
+    if (!success && mounted && !auth.hasSession) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Google sign-in was cancelled or could not be completed.'),
+          backgroundColor: AppColors.nope,
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override

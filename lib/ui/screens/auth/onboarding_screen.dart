@@ -59,6 +59,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   @override
+  void didUpdateWidget(covariant OnboardingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_nameController.text.isEmpty && widget.initialName != null) {
+      _nameController.text = widget.initialName!;
+    }
+    if (_emailController.text.isEmpty && widget.initialEmail != null) {
+      _emailController.text = widget.initialEmail!;
+    }
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     _nameController.dispose();
@@ -126,7 +137,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
       setState(() => _currentStep--);
     } else {
-      Navigator.pop(context);
+      final auth = context.read<AuthProvider>();
+      if (auth.needsOnboarding) {
+        auth.signOut();
+      } else {
+        Navigator.maybePop(context);
+      }
     }
   }
 

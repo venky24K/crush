@@ -53,7 +53,7 @@ class SupabaseService {
         provider,
         redirectTo: kIsWeb ? null : AppConstants.authRedirectUri,
         authScreenLaunchMode:
-            kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication,
+            kIsWeb ? LaunchMode.platformDefault : LaunchMode.inAppBrowserView,
       );
     } catch (e) {
       debugPrint('[SupabaseService] OAuth error ($provider): $e');
