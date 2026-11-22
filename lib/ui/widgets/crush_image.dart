@@ -15,6 +15,8 @@ class CrushImage extends StatelessWidget {
   final BorderRadius? borderRadius;
   final Widget? placeholder;
   final Widget? errorWidget;
+  final int? memCacheWidth;
+  final int? memCacheHeight;
 
   const CrushImage({
     super.key,
@@ -25,6 +27,8 @@ class CrushImage extends StatelessWidget {
     this.borderRadius,
     this.placeholder,
     this.errorWidget,
+    this.memCacheWidth = 1080,
+    this.memCacheHeight,
   });
 
   bool get _isNetwork {
@@ -38,15 +42,23 @@ class CrushImage extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      color: AppColors.surfaceLight,
-      child: const Center(
-        child: SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: AppColors.primary,
-          ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F2ED),
+        borderRadius: borderRadius,
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFAF5F0),
+            Color(0xFFEFE8E1),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.favorite_rounded,
+          color: AppColors.primary.withValues(alpha: 0.18),
+          size: 44,
         ),
       ),
     );
@@ -85,6 +97,12 @@ class CrushImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
+        memCacheWidth: memCacheWidth,
+        memCacheHeight: memCacheHeight,
+        maxWidthDiskCache: 1440,
+        maxHeightDiskCache: 1920,
+        fadeInDuration: const Duration(milliseconds: 200),
+        fadeOutDuration: const Duration(milliseconds: 150),
         placeholder: (context, _) => _buildPlaceholder(),
         errorWidget: (context, _, error) => _buildFallback(),
       );
@@ -118,14 +136,17 @@ class CrushImage extends StatelessWidget {
 }
 
 /// Helper function to create an ImageProvider for CircleAvatar / BoxDecoration
-ImageProvider? crushImageProvider(String? photoUri) {
+ImageProvider? crushImageProvider(String? photoUri, {int? maxWidth}) {
   if (photoUri == null || photoUri.trim().isEmpty) {
     return null;
   }
 
   final uri = photoUri.trim();
   if (uri.startsWith('http://') || uri.startsWith('https://')) {
-    return CachedNetworkImageProvider(uri);
+    return CachedNetworkImageProvider(
+      uri,
+      maxWidth: maxWidth ?? 1080,
+    );
   }
 
   final cleanPath = uri.replaceFirst('file://', '');

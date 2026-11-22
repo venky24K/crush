@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:provider/provider.dart';
 import 'package:crush/core/constants/app_colors.dart';
+import 'package:crush/models/profile_model.dart';
 import 'package:crush/providers/auth_provider.dart';
 import 'package:crush/providers/chat_provider.dart';
 import 'package:crush/providers/discovery_provider.dart';
@@ -30,6 +32,27 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   void dispose() {
     _cardSwiperController.dispose();
     super.dispose();
+  }
+
+  void _precacheUpcomingProfiles(
+    BuildContext context,
+    List<ProfileModel> profiles, [
+    int startIndex = 0,
+  ]) {
+    if (profiles.isEmpty || startIndex >= profiles.length) return;
+    final endIndex = (startIndex + 4).clamp(0, profiles.length);
+    for (int i = startIndex; i < endIndex; i++) {
+      final p = profiles[i];
+      final photos = p.photos.isNotEmpty ? p.photos : [p.primaryPhoto];
+      for (final photo in photos.take(2)) {
+        if (photo.startsWith('http://') || photo.startsWith('https://')) {
+          precacheImage(
+            CachedNetworkImageProvider(photo, maxWidth: 1080),
+            context,
+          ).catchError((_) {});
+        }
+      }
+    }
   }
 
   void _showFilters(BuildContext context, DiscoveryProvider provider) {
@@ -133,6 +156,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                       ? 3
                       : profiles.length;
 
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) _precacheUpcomingProfiles(context, profiles);
+                  });
+
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -171,6 +198,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                         onSwipe: (prevIndex, currentIndex, direction) async {
                           final currentUserId =
                               authProvider.currentProfile?.id ?? 'guest';
+
+                          if (currentIndex != null) {
+                            _precacheUpcomingProfiles(
+                              this.context,
+                              profiles,
+                              currentIndex + 1,
+                            );
+                          }
 
                           if (direction == CardSwiperDirection.right) {
                             final isMatch = await discoveryProvider.swipeRight(

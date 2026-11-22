@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:crush/core/constants/app_colors.dart';
 import 'package:crush/models/profile_model.dart';
@@ -21,10 +22,35 @@ class _SwipeCardState extends State<SwipeCard> {
   int _currentPhotoIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _precacheRemainingPhotos();
+    });
+  }
+
+  @override
   void didUpdateWidget(covariant SwipeCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.profile.id != widget.profile.id) {
       _currentPhotoIndex = 0;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _precacheRemainingPhotos();
+      });
+    }
+  }
+
+  /// Proactively pre-caches all photos of this profile into memory
+  /// so tapping left/right to view other pictures is instant with 0ms lag.
+  void _precacheRemainingPhotos() {
+    if (!mounted) return;
+    for (final photo in widget.profile.photos) {
+      if (photo.startsWith('http://') || photo.startsWith('https://')) {
+        precacheImage(
+          CachedNetworkImageProvider(photo, maxWidth: 1080),
+          context,
+        ).catchError((_) {});
+      }
     }
   }
 
@@ -61,9 +87,7 @@ class _SwipeCardState extends State<SwipeCard> {
             CrushImage(
               imageUrl: photos[safeIndex],
               fit: BoxFit.cover,
-              placeholder: const ColoredBox(
-                color: AppColors.surfaceLight,
-              ),
+              memCacheWidth: 1080,
               errorWidget: Container(
                 color: AppColors.surfaceLight,
                 child: const Icon(
