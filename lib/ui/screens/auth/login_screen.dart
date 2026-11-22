@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:crush/core/constants/app_colors.dart';
 import 'package:crush/providers/auth_provider.dart';
 import 'package:crush/ui/screens/auth/onboarding_screen.dart';
@@ -47,13 +48,23 @@ class _LoginScreenState extends State<LoginScreen> {
     final auth = context.read<AuthProvider>();
     await auth.signInWithApple();
     if (!mounted) return;
+
+    if (auth.isAuthenticated && auth.currentProfile != null) {
+      return;
+    }
+
+    final user = Supabase.instance.client.auth.currentUser;
+    final realEmail = user?.email;
+    final realName = user?.userMetadata?['full_name'] as String? ??
+        user?.userMetadata?['name'] as String?;
+
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const OnboardingScreen(
+        builder: (_) => OnboardingScreen(
           authProvider: 'apple',
-          initialEmail: 'alex@icloud.com',
-          initialName: 'Alex',
+          initialEmail: realEmail,
+          initialName: realName,
         ),
       ),
     );
@@ -63,13 +74,23 @@ class _LoginScreenState extends State<LoginScreen> {
     final auth = context.read<AuthProvider>();
     await auth.signInWithGoogle();
     if (!mounted) return;
+
+    if (auth.isAuthenticated && auth.currentProfile != null) {
+      return;
+    }
+
+    final user = Supabase.instance.client.auth.currentUser;
+    final realEmail = user?.email;
+    final realName = user?.userMetadata?['full_name'] as String? ??
+        user?.userMetadata?['name'] as String?;
+
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const OnboardingScreen(
+        builder: (_) => OnboardingScreen(
           authProvider: 'google',
-          initialEmail: 'alex.rivera@gmail.com',
-          initialName: 'Alex Rivera',
+          initialEmail: realEmail,
+          initialName: realName,
         ),
       ),
     );

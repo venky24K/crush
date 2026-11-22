@@ -13,7 +13,8 @@ class AppConstants {
   // OAuth & Social Auth Configuration
   static const String authRedirectUri = 'crush://login-callback';
   static const String appleServiceId = 'com.vardhan.crush.app';
-  static const String googleWebClientId = ''; // Insert Google Web Client ID here
+  static const String googleWebClientId =
+      '678975673146-ms4dt3446ru3ktg6f0g6tplk22mbi38g.apps.googleusercontent.com';
   static const String googleIosClientId =
       '678975673146-51d6djtkg8fg3rhgcv2mjvamceojrhda.apps.googleusercontent.com';
   static const String googleAndroidClientId =
