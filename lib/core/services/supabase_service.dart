@@ -86,43 +86,80 @@ class SupabaseService {
   Future<List<ProfileModel>> fetchDiscoveryProfiles({
     required String currentUserId,
     int minAge = 18,
-    int maxAge = 40,
-    double maxDistanceKm = 50,
+    int maxAge = 50,
+    double maxDistanceKm = 100,
+    String genderPreference = 'everyone',
   }) async {
     if (client == null) {
       return [];
     }
 
     try {
-      final List<String> swipedIds = [];
+      final Set<String> swipedIds = {};
       if (currentUserId.isNotEmpty) {
         final swipedResponse = await client!
             .from('swipes')
             .select('swiped_id')
             .eq('swiper_id', currentUserId);
 
-        swipedIds.addAll((swipedResponse as List)
-            .map((row) => row['swiped_id'] as String));
-        swipedIds.add(currentUserId);
+        for (final row in (swipedResponse as List)) {
+          final id = row['swiped_id'] as String?;
+          if (id != null) swipedIds.add(id);
+        }
       }
 
       var query = client!.from('profiles').select();
       if (currentUserId.isNotEmpty) {
         query = query.neq('id', currentUserId);
-        if (swipedIds.length < 50) {
-          for (final id in swipedIds) {
-            query = query.neq('id', id);
-          }
-        }
       }
 
-      final response = await query.limit(25);
-      return (response as List)
+      final response = await query.limit(50);
+      final rawList = (response as List)
           .map((json) => ProfileModel.fromJson(json))
           .toList();
+
+      final normalizedPref = genderPreference.trim().toLowerCase();
+
+      return rawList.where((p) {
+        // Exclude current user
+        if (p.id == currentUserId) return false;
+
+        // Exclude already swiped profiles
+        if (swipedIds.contains(p.id)) return false;
+
+        // Gender filter
+        final pGender = p.gender.toLowerCase();
+        final wantsMen = normalizedPref == 'men' || normalizedPref == 'male';
+        final wantsWomen = normalizedPref == 'women' || normalizedPref == 'female';
+
+        if (wantsMen && pGender != 'male') {
+          return false;
+        }
+        if (wantsWomen && pGender != 'female') {
+          return false;
+        }
+
+        // Age filter
+        if (p.age < minAge || p.age > maxAge) {
+          return false;
+        }
+
+        return true;
+      }).toList();
     } catch (e) {
       debugPrint('[SupabaseService] Error fetching discovery: $e');
       return [];
+    }
+  }
+
+  Future<bool> resetSwipes(String currentUserId) async {
+    if (client == null || currentUserId.isEmpty) return false;
+    try {
+      await client!.from('swipes').delete().eq('swiper_id', currentUserId);
+      return true;
+    } catch (e) {
+      debugPrint('[SupabaseService] Error resetting swipes: $e');
+      return false;
     }
   }
 

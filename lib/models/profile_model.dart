@@ -86,9 +86,9 @@ class ProfileModel {
       city: json['city'] as String? ?? '',
       distanceKm: (json['distance_km'] as num?)?.toDouble() ?? 5.0,
       isVerified: json['is_verified'] as bool? ?? false,
-      minAgePreference: json['min_age_preference'] as int? ?? 18,
-      maxAgePreference: json['max_age_preference'] as int? ?? 40,
-      maxDistanceKm: json['max_distance_km'] as int? ?? 50,
+      minAgePreference: (json['min_age_preference'] as num?)?.toInt() ?? 18,
+      maxAgePreference: (json['max_age_preference'] as num?)?.toInt() ?? 50,
+      maxDistanceKm: (json['max_distance_km'] as num?)?.toInt() ?? 50,
     );
   }
 

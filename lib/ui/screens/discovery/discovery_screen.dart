@@ -29,6 +29,21 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   final CardSwiperController _cardSwiperController = CardSwiperController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final auth = context.read<AuthProvider>();
+      final discovery = context.read<DiscoveryProvider>();
+      if (auth.currentProfile != null) {
+        discovery.initializeFromProfile(auth.currentProfile!);
+      } else {
+        discovery.loadDiscoveryProfiles();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _cardSwiperController.dispose();
     super.dispose();
@@ -358,10 +373,69 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 color: AppColors.textSecondary,
               ),
             ),
+            const SizedBox(height: 16),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              children: [
+                Chip(
+                  label: Text(
+                    'Looking for: ${provider.genderPreference.toUpperCase()}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  ),
+                  backgroundColor: AppColors.surfaceLight,
+                  side: BorderSide.none,
+                ),
+                Chip(
+                  label: Text(
+                    'Ages ${provider.ageRange.start.round()} - ${provider.ageRange.end.round()}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  ),
+                  backgroundColor: AppColors.surfaceLight,
+                  side: BorderSide.none,
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => provider.loadDiscoveryProfiles(),
-              child: const Text('Refresh Feed'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    final myId = context.read<AuthProvider>().currentProfile?.id;
+                    provider.loadDiscoveryProfiles(currentUserId: myId);
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: const Text('Refresh'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    final myId = context.read<AuthProvider>().currentProfile?.id;
+                    if (myId != null && myId.isNotEmpty) {
+                      provider.resetSwipes(myId);
+                    }
+                  },
+                  icon: const Icon(Icons.restart_alt_rounded, size: 18),
+                  label: const Text('Reset Swipes'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.primary),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

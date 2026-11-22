@@ -4,6 +4,7 @@ import 'package:crush/core/constants/app_colors.dart';
 import 'package:crush/core/services/notification_service.dart';
 import 'package:crush/providers/auth_provider.dart';
 import 'package:crush/providers/chat_provider.dart';
+import 'package:crush/providers/discovery_provider.dart';
 import 'package:crush/ui/screens/discovery/discovery_screen.dart';
 import 'package:crush/ui/screens/matches/matches_screen.dart';
 import 'package:crush/ui/screens/profile/user_profile_screen.dart';
@@ -31,6 +32,7 @@ class _HomeNavigationScreenState extends State<HomeNavigationScreen> {
       if (auth.currentProfile != null) {
         _chatProvider?.subscribeToMatches(auth.currentProfile!.id);
         NotificationService().syncUserFcmToken(auth.currentProfile!.id);
+        context.read<DiscoveryProvider>().initializeFromProfile(auth.currentProfile!);
       }
       _chatProvider?.newMatchNotifier.addListener(_onNewMatchReceived);
     });

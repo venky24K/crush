@@ -13,9 +13,9 @@ class DiscoveryProvider extends ChangeNotifier {
   bool _isLoading = false;
   ProfileModel? _lastMatchedProfile;
 
-  // Filters
+  // Filters (default to wide inclusive range so profiles aren't hidden)
   double _maxDistanceKm = AppConstants.defaultMaxDistanceKm;
-  RangeValues _ageRange = const RangeValues(20, 32);
+  RangeValues _ageRange = const RangeValues(18, 50);
   String _genderPreference = 'everyone';
 
   List<ProfileModel> get profiles => _profiles;
@@ -32,18 +32,41 @@ class DiscoveryProvider extends ChangeNotifier {
     loadDiscoveryProfiles();
   }
 
-  Future<void> loadDiscoveryProfiles() async {
+  /// Initialize filter preferences from user's profile and load cards
+  void initializeFromProfile(ProfileModel userProfile) {
+    if (userProfile.lookingFor.contains('female') &&
+        !userProfile.lookingFor.contains('male')) {
+      _genderPreference = 'female';
+    } else if (userProfile.lookingFor.contains('male') &&
+        !userProfile.lookingFor.contains('female')) {
+      _genderPreference = 'male';
+    } else {
+      _genderPreference = 'everyone';
+    }
+    loadDiscoveryProfiles(currentUserId: userProfile.id);
+  }
+
+  Future<void> loadDiscoveryProfiles({
+    String? currentUserId,
+    String? genderPreference,
+  }) async {
     _isLoading = true;
     notifyListeners();
 
+    if (genderPreference != null) {
+      _genderPreference = genderPreference;
+    }
+
     try {
-      final currentUserId =
-          _supabaseService.client?.auth.currentUser?.id ?? '';
+      final effectiveUserId = currentUserId ??
+          (_supabaseService.client?.auth.currentUser?.id ?? '');
+
       final fetched = await _supabaseService.fetchDiscoveryProfiles(
-        currentUserId: currentUserId,
+        currentUserId: effectiveUserId,
         minAge: _ageRange.start.round(),
         maxAge: _ageRange.end.round(),
         maxDistanceKm: _maxDistanceKm,
+        genderPreference: _genderPreference,
       );
 
       _profiles = fetched;
@@ -54,6 +77,16 @@ class DiscoveryProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  /// Reset outgoing swipes for this user so they can swipe on everyone again
+  Future<void> resetSwipes(String currentUserId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    await _supabaseService.resetSwipes(currentUserId);
+    _swipedHistory.clear();
+    await loadDiscoveryProfiles(currentUserId: currentUserId);
   }
 
   Future<bool> swipeRight({required String currentUserId}) async {
