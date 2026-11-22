@@ -11,6 +11,7 @@ import 'providers/discovery_provider.dart';
 import 'ui/screens/auth/login_screen.dart';
 import 'ui/screens/auth/onboarding_screen.dart';
 import 'ui/screens/home_navigation_screen.dart';
+import 'ui/screens/splash/splash_screen.dart';
 
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -70,7 +71,7 @@ class CrushApp extends StatelessWidget {
         title: 'Crush',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
-        home: const AuthGate(),
+        home: const SplashScreen(),
       ),
     );
   }
@@ -84,12 +85,7 @@ class AuthGate extends StatelessWidget {
     final authProvider = context.watch<AuthProvider>();
 
     if (authProvider.isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFFFFFFF),
-        body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFFF5364)),
-        ),
-      );
+      return const SplashScreen(embedded: true);
     }
 
     // 1. Returning user: authenticated with profile -> Main App
