@@ -118,11 +118,9 @@ class CrushImage extends StatelessWidget {
 }
 
 /// Helper function to create an ImageProvider for CircleAvatar / BoxDecoration
-ImageProvider crushImageProvider(String? photoUri) {
+ImageProvider? crushImageProvider(String? photoUri) {
   if (photoUri == null || photoUri.trim().isEmpty) {
-    return const NetworkImage(
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-    );
+    return null;
   }
 
   final uri = photoUri.trim();
@@ -136,7 +134,5 @@ ImageProvider crushImageProvider(String? photoUri) {
     return FileImage(file);
   }
 
-  return const NetworkImage(
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-  );
+  return null;
 }

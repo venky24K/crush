@@ -53,7 +53,7 @@ class ProfileModel {
 
   String get primaryPhoto {
     if (photos.isNotEmpty) return photos.first;
-    return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80';
+    return '';
   }
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {

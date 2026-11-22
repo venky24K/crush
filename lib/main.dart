@@ -29,7 +29,7 @@ void main() async {
     ),
   );
 
-  // Initialize Supabase (falls back smoothly to Demo Mode if placeholder keys are present)
+  // Initialize live Supabase backend services
   await SupabaseService().initialize();
 
   // Remove splash screen now that core services are ready

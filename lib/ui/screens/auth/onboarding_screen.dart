@@ -43,10 +43,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String _lookingFor = 'Men';
   String _intention = '💍 Long-term partner';
   final List<String> _selectedInterests = [];
-  final List<String> _photos = [
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
-  ];
+  final List<String> _photos = [];
 
   final ImagePicker _picker = ImagePicker();
   bool _isSubmitting = false;
@@ -165,17 +162,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     } catch (e) {
       debugPrint('[Onboarding] Image pick error: $e');
     }
-  }
-
-  void _addSamplePhotos() {
-    setState(() {
-      _photos.clear();
-      _photos.addAll([
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
-      ]);
-    });
   }
 
   void _submitOnboarding() async {
@@ -587,29 +573,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${_photos.length} of 6 added (min 2 required)',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: _photos.length >= 2
-                      ? AppColors.like
-                      : AppColors.textSecondary,
-                ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '${_photos.length} of 6 added (min 2 required)',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _photos.length >= 2
+                    ? AppColors.like
+                    : AppColors.textSecondary,
               ),
-              TextButton.icon(
-                onPressed: _addSamplePhotos,
-                icon: const Icon(Icons.auto_awesome_rounded,
-                    size: 16, color: AppColors.primary),
-                label: const Text(
-                  'Use Sample Photos',
-                  style: TextStyle(fontSize: 12, color: AppColors.primary),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 8),
 

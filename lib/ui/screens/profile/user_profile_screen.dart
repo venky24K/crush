@@ -318,7 +318,11 @@ class UserProfileScreen extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.mail_outline),
                 title: const Text('Email'),
-                subtitle: Text(auth.currentProfile?.email ?? 'alex@crush.app'),
+                subtitle: Text(
+                  auth.currentProfile?.email.isNotEmpty == true
+                      ? auth.currentProfile!.email
+                      : (auth.currentUser?.email ?? 'No email associated'),
+                ),
               ),
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: AppColors.nope),

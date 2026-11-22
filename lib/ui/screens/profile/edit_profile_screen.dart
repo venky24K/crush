@@ -123,25 +123,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   _pickPhoto(ImageSource.camera);
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.auto_awesome_rounded,
-                    color: AppColors.primary, size: 26),
-                title: const Text(
-                  'Add Sample Photo',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  setState(() {
-                    if (_photos.length < 6) {
-                      _photos.add(
-                        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-                      );
-                    }
-                  });
-                },
-              ),
               const SizedBox(height: 8),
             ],
           ),

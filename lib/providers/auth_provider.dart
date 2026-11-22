@@ -294,7 +294,7 @@ class AuthProvider extends ChangeNotifier {
       final userEmail = email ??
           (_currentProfile?.email.isNotEmpty == true
               ? _currentProfile!.email
-              : (user?.email ?? 'user@crush.app'));
+              : (user?.email ?? ''));
 
       final profile = ProfileModel(
         id: userId,

@@ -14,7 +14,6 @@ class SupabaseService {
   bool _isInitialized = false;
 
   bool get isInitialized => _isInitialized;
-  bool get useMockMode => false;
 
   SupabaseClient? get client {
     if (_isInitialized) {
