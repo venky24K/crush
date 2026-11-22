@@ -10,6 +10,12 @@ class AppConstants {
   static const String defaultSupabaseAnonKey =
       'sb_publishable_M5TbaPxagaErnCsO4BOK7w_CcXlxr-7';
 
+  // OAuth & Social Auth Configuration
+  static const String authRedirectUri = 'crush://login-callback';
+  static const String appleServiceId = 'com.vardhan.crush.app';
+  static const String googleWebClientId = ''; // Insert Google Web Client ID here
+  static const String googleIosClientId = ''; // Insert Google iOS Client ID here
+
   // Storage Keys
   static const String prefsUserThemeKey = 'crush_user_theme';
 

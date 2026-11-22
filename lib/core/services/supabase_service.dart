@@ -51,7 +51,7 @@ class SupabaseService {
     try {
       return await client!.auth.signInWithOAuth(
         provider,
-        redirectTo: kIsWeb ? null : 'crush://login-callback',
+        redirectTo: kIsWeb ? null : AppConstants.authRedirectUri,
       );
     } catch (e) {
       debugPrint('[SupabaseService] OAuth error ($provider): $e');
