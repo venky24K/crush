@@ -46,3 +46,10 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Apple Keys & Certificates (NEVER commit to git)
+*.p8
+*.p12
+*.pem
+*.cer
+*.mobileprovision
