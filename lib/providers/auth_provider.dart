@@ -109,39 +109,64 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    // 1. Try Native Google Sign-In SDK (smooth native 1-tap sheet, no Safari app jump)
+    // 1. Native Google Sign-In SDK (smooth 1-tap sheet, no Safari jump)
     try {
+      // Always create a fresh GoogleSignIn instance and sign out any stale state
+      // to avoid "PlatformException: sign_in_failed / network_error" on retries
       final googleSignIn = GoogleSignIn(
         clientId: Platform.isIOS ? AppConstants.googleIosClientId : null,
         serverClientId: AppConstants.googleWebClientId,
+        scopes: ['email', 'profile'],
       );
 
-      final googleUser = await googleSignIn.signIn();
-      if (googleUser != null) {
-        final googleAuth = await googleUser.authentication;
-        final idToken = googleAuth.idToken;
-        final accessToken = googleAuth.accessToken;
+      // Silently disconnect any stale cached account so the chooser always shows
+      await googleSignIn.signOut().catchError((_) => null);
 
-        if (idToken != null) {
-          final res = await _supabaseService.client?.auth.signInWithIdToken(
-            provider: OAuthProvider.google,
-            idToken: idToken,
-            accessToken: accessToken,
-          );
-          if (res?.user != null) {
-            _currentProfile = await _supabaseService.getCurrentUserProfile();
-            _isLoading = false;
-            notifyListeners();
-            return true;
-          }
-        }
+      final googleUser = await googleSignIn.signIn();
+
+      // User dismissed the picker
+      if (googleUser == null) {
+        _isLoading = false;
+        notifyListeners();
+        return false;
       }
+
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      final accessToken = googleAuth.accessToken;
+
+      if (idToken == null) {
+        debugPrint('[AuthProvider] Google idToken is null — falling back to OAuth');
+        throw Exception('No idToken');
+      }
+
+      final res = await _supabaseService.client?.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+
+      if (res?.user != null) {
+        _currentProfile = await _supabaseService.getCurrentUserProfile();
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+
+      throw Exception('Supabase signInWithIdToken returned no user');
     } catch (e) {
-      debugPrint(
-          '[AuthProvider] Native Google Sign-In notice: $e. Using in-app browser OAuth fallback...');
+      debugPrint('[AuthProvider] Native Google sign-in notice: $e');
+
+      // If user explicitly cancelled, don't fall back to browser OAuth
+      if (e.toString().contains('sign_in_canceled') ||
+          e.toString().contains('canceled')) {
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
     }
 
-    // 2. Fallback to Supabase OAuth with inAppBrowserView (clean modal sheet)
+    // 2. Fallback: Supabase OAuth web flow (in-app browser view)
     try {
       final success =
           await _supabaseService.signInWithOAuth(OAuthProvider.google);
@@ -149,7 +174,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return success;
     } catch (e) {
-      debugPrint('[AuthProvider] Google Sign-In OAuth error: $e');
+      debugPrint('[AuthProvider] Google OAuth browser fallback error: $e');
       _isLoading = false;
       notifyListeners();
       return false;
