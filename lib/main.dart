@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'core/constants/app_theme.dart';
+import 'core/services/notification_service.dart';
 import 'core/services/supabase_service.dart';
 import 'providers/auth_provider.dart';
 import 'providers/chat_provider.dart';
@@ -31,6 +33,14 @@ void main() async {
 
   // Initialize live Supabase backend services
   await SupabaseService().initialize();
+
+  // Initialize push notification services (FCM & APNs)
+  try {
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    await NotificationService().initialize();
+  } catch (e) {
+    debugPrint('[Main] Push notification init note: $e');
+  }
 
   // Remove splash screen now that core services are ready
   FlutterNativeSplash.remove();

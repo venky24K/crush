@@ -78,6 +78,11 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>fetch</string>
+			<string>remote-notification</string>
+		</array>
 		<key>NSCameraUsageDescription</key>
 		<string>Crush needs camera access so you can take and upload real photos to your dating profile.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
