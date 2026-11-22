@@ -322,8 +322,50 @@ class UserProfileScreen extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: AppColors.nope),
-                title: const Text('Delete Account', style: TextStyle(color: AppColors.nope)),
-                onTap: () => Navigator.pop(ctx),
+                title: const Text('Delete Account',
+                    style: TextStyle(
+                        color: AppColors.nope, fontWeight: FontWeight.w600)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  showDialog(
+                    context: context,
+                    builder: (dialogCtx) => AlertDialog(
+                      backgroundColor: AppColors.surface,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      title: const Text(
+                        'Delete Crush Account?',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary),
+                      ),
+                      content: const Text(
+                        'Are you sure you want to permanently delete your account? All your matches, chats, photos, and preferences will be permanently erased. This action cannot be undone.',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogCtx),
+                          child: const Text('Cancel',
+                              style: TextStyle(color: AppColors.textSecondary)),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.nope,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () async {
+                            Navigator.pop(dialogCtx);
+                            await auth.deleteAccount();
+                          },
+                          child: const Text('Delete Permanently'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ],
           ),

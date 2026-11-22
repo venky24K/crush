@@ -259,4 +259,18 @@ class SupabaseService {
       return false;
     }
   }
+
+  Future<bool> deleteCurrentUserAccount() async {
+    if (client == null || client?.auth.currentUser == null) return false;
+    try {
+      final userId = client!.auth.currentUser!.id;
+      await client!.from('profiles').delete().eq('id', userId);
+      await client!.from('swipes').delete().or('swiper_id.eq.$userId,swiped_id.eq.$userId');
+      await client!.auth.signOut();
+      return true;
+    } catch (e) {
+      debugPrint('[SupabaseService] Error deleting user account: $e');
+      return false;
+    }
+  }
 }

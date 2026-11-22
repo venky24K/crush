@@ -440,4 +440,27 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+  Future<bool> deleteAccount() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final success = await _supabaseService.deleteCurrentUserAccount();
+      try {
+        final googleSignIn = GoogleSignIn();
+        await googleSignIn.signOut();
+      } catch (_) {}
+
+      _currentProfile = null;
+      _isLoading = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      debugPrint('[AuthProvider] deleteAccount error: $e');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 }

@@ -78,6 +78,10 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
+		<key>NSCameraUsageDescription</key>
+		<string>Crush needs camera access so you can take and upload real photos to your dating profile.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Crush needs photo library access so you can choose profile photos from your camera roll.</string>
 		<key>UIStatusBarHidden</key>
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>

@@ -387,11 +387,34 @@ class _ChatScreenState extends State<ChatScreen> {
                 onTap: () => Navigator.pop(ctx),
               ),
               ListTile(
+                leading: const Icon(Icons.flag_outlined, color: AppColors.nope),
+                title: const Text('Report User',
+                    style: TextStyle(color: AppColors.nope)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          '${widget.match.user.fullName} reported. Our safety team reviews all reports within 24 hours.'),
+                      backgroundColor: AppColors.surface,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.block_flipped, color: AppColors.nope),
-                title: const Text('Unmatch & Block', style: TextStyle(color: AppColors.nope)),
+                title: const Text('Unmatch & Block',
+                    style: TextStyle(color: AppColors.nope)),
                 onTap: () {
                   Navigator.pop(ctx);
                   Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          '${widget.match.user.fullName} has been blocked and removed from your matches.'),
+                      backgroundColor: AppColors.surface,
+                    ),
+                  );
                 },
               ),
             ],
