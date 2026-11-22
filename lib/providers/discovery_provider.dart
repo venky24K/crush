@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:crush/core/constants/app_constants.dart';
-import 'package:crush/core/services/mock_data_service.dart';
 import 'package:crush/core/services/supabase_service.dart';
 import 'package:crush/models/profile_model.dart';
 
@@ -38,8 +37,10 @@ class DiscoveryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final currentUserId =
+          _supabaseService.client?.auth.currentUser?.id ?? '';
       final fetched = await _supabaseService.fetchDiscoveryProfiles(
-        currentUserId: MockDataService.currentUser.id,
+        currentUserId: currentUserId,
         minAge: _ageRange.start.round(),
         maxAge: _ageRange.end.round(),
         maxDistanceKm: _maxDistanceKm,
@@ -48,7 +49,7 @@ class DiscoveryProvider extends ChangeNotifier {
       _profiles = fetched;
     } catch (e) {
       debugPrint('[DiscoveryProvider] Error loading profiles: $e');
-      _profiles = List.from(MockDataService.discoveryProfiles);
+      _profiles = [];
     }
 
     _isLoading = false;

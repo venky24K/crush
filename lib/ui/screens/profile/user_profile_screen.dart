@@ -214,19 +214,6 @@ class UserProfileScreen extends StatelessWidget {
               onTap: () {},
             ),
 
-            _buildOptionTile(
-              icon: Icons.cloud_done_rounded,
-              title: 'Database Mode',
-              subtitle: auth.isDemoMode
-                  ? 'Demo Mode (Offline with rich mock data)'
-                  : 'Connected to Live Supabase',
-              trailing: Switch(
-                value: auth.isDemoMode,
-                activeTrackColor: AppColors.primary,
-                onChanged: (val) => auth.toggleDemoMode(val),
-              ),
-            ),
-
             const SizedBox(height: 20),
 
             SizedBox(

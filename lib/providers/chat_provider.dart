@@ -88,43 +88,6 @@ class ChatProvider extends ChangeNotifier {
       }
 
       notifyListeners();
-
-      if (_supabaseService.useMockMode) {
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          _simulateMockReply(matchId);
-        });
-      }
     }
-  }
-
-  void _simulateMockReply(String matchId) {
-    final replies = [
-      'That sounds amazing! When are you free this week? 😊',
-      'Haha I totally agree! What else are you passionate about?',
-      'Count me in! I know this cozy coffee spot downtown ☕',
-      'That made me smile! Tell me more ✨',
-    ];
-    final replyText = (replies..shuffle()).first;
-
-    final replyMsg = MessageModel(
-      id: 'mock_${DateTime.now().millisecondsSinceEpoch}',
-      matchId: matchId,
-      senderId: 'matched_user',
-      content: replyText,
-      createdAt: DateTime.now(),
-      isRead: true,
-    );
-
-    final currentList = _messagesByMatch[matchId] ?? [];
-    _messagesByMatch[matchId] = [...currentList, replyMsg];
-
-    final matchIndex = _matches.indexWhere((m) => m.id == matchId);
-    if (matchIndex != -1) {
-      _matches[matchIndex] = _matches[matchIndex].copyWith(
-        lastMessage: replyText,
-        lastMessageAt: DateTime.now(),
-      );
-    }
-    notifyListeners();
   }
 }

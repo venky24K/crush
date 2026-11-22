@@ -75,12 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _handleDemoLogin() async {
-    final auth = context.read<AuthProvider>();
-    auth.toggleDemoMode(true);
-    await auth.signInWithEmail('alex@crush.app', 'demo');
-  }
-
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -316,34 +310,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ],
-
-                const SizedBox(height: 16),
-
-                // ─── Instant Demo Mode Button ───
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton.icon(
-                    onPressed: auth.isLoading ? null : _handleDemoLogin,
-                    icon: const Icon(Icons.bolt_rounded,
-                        color: AppColors.rewind, size: 20),
-                    label: const Text(
-                      'Explore Instant Demo Mode (Offline)',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: AppColors.surfaceLight,
-                      side: const BorderSide(color: AppColors.cardBorder),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
-                  ),
-                ),
 
                 const SizedBox(height: 32),
 

@@ -11,7 +11,6 @@ class AppConstants {
       'sb_publishable_M5TbaPxagaErnCsO4BOK7w_CcXlxr-7';
 
   // Storage Keys
-  static const String prefsDemoModeKey = 'crush_demo_mode_enabled';
   static const String prefsUserThemeKey = 'crush_user_theme';
 
   // Discovery Defaults

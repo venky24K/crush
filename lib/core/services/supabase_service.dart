@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:crush/core/constants/app_constants.dart';
-import 'package:crush/core/services/mock_data_service.dart';
 import 'package:crush/models/match_model.dart';
 import 'package:crush/models/message_model.dart';
 import 'package:crush/models/profile_model.dart';
@@ -13,10 +12,9 @@ class SupabaseService {
   SupabaseService._internal();
 
   bool _isInitialized = false;
-  bool _useMockMode = true;
 
   bool get isInitialized => _isInitialized;
-  bool get useMockMode => _useMockMode;
+  bool get useMockMode => false;
 
   SupabaseClient? get client {
     if (_isInitialized) {
@@ -33,13 +31,6 @@ class SupabaseService {
     final url = supabaseUrl ?? AppConstants.defaultSupabaseUrl;
     final anonKey = supabaseAnonKey ?? AppConstants.defaultSupabaseAnonKey;
 
-    if (url.contains('your-project') || anonKey.contains('your-anon-key')) {
-      debugPrint('[SupabaseService] Real Supabase credentials not found. Defaulting to Demo/Mock Mode.');
-      _useMockMode = true;
-      _isInitialized = true;
-      return;
-    }
-
     try {
       await Supabase.initialize(
         url: url,
@@ -48,23 +39,15 @@ class SupabaseService {
         debug: kDebugMode,
       );
       _isInitialized = true;
-      _useMockMode = false;
-      debugPrint('[SupabaseService] Connected to Supabase successfully!');
+      debugPrint('[SupabaseService] Connected to Supabase live database successfully!');
     } catch (e) {
-      debugPrint('[SupabaseService] Failed to initialize Supabase: $e. Falling back to Demo Mode.');
-      _useMockMode = true;
-      _isInitialized = true;
+      debugPrint('[SupabaseService] Failed to initialize Supabase: $e');
+      _isInitialized = false;
     }
-  }
-
-  void enableMockMode(bool enable) {
-    _useMockMode = enable;
   }
 
   Future<bool> signInWithOAuth(OAuthProvider provider) async {
-    if (_useMockMode || client == null) {
-      return true;
-    }
+    if (client == null) return false;
     try {
       return await client!.auth.signInWithOAuth(
         provider,
@@ -77,10 +60,6 @@ class SupabaseService {
   }
 
   Future<ProfileModel?> getCurrentUserProfile() async {
-    if (_useMockMode) {
-      return MockDataService.currentUser;
-    }
-
     if (client == null || client?.auth.currentUser == null) {
       return null;
     }
@@ -99,7 +78,7 @@ class SupabaseService {
       return null;
     } catch (e) {
       debugPrint('[SupabaseService] Error fetching profile: $e');
-      return MockDataService.currentUser;
+      return null;
     }
   }
 
@@ -109,36 +88,40 @@ class SupabaseService {
     int maxAge = 40,
     double maxDistanceKm = 50,
   }) async {
-    if (_useMockMode || client == null) {
-      return List<ProfileModel>.from(MockDataService.discoveryProfiles);
+    if (client == null) {
+      return [];
     }
 
     try {
-      final swipedResponse = await client!
-          .from('swipes')
-          .select('swiped_id')
-          .eq('swiper_id', currentUserId);
+      final List<String> swipedIds = [];
+      if (currentUserId.isNotEmpty) {
+        final swipedResponse = await client!
+            .from('swipes')
+            .select('swiped_id')
+            .eq('swiper_id', currentUserId);
 
-      final List<String> swipedIds = (swipedResponse as List)
-          .map((row) => row['swiped_id'] as String)
-          .toList();
-      swipedIds.add(currentUserId);
+        swipedIds.addAll((swipedResponse as List)
+            .map((row) => row['swiped_id'] as String));
+        swipedIds.add(currentUserId);
+      }
 
-      var query = client!.from('profiles').select().neq('id', currentUserId);
-
-      if (swipedIds.length < 50) {
-        for (final id in swipedIds) {
-          query = query.neq('id', id);
+      var query = client!.from('profiles').select();
+      if (currentUserId.isNotEmpty) {
+        query = query.neq('id', currentUserId);
+        if (swipedIds.length < 50) {
+          for (final id in swipedIds) {
+            query = query.neq('id', id);
+          }
         }
       }
 
-      final response = await query.limit(20);
+      final response = await query.limit(25);
       return (response as List)
           .map((json) => ProfileModel.fromJson(json))
           .toList();
     } catch (e) {
       debugPrint('[SupabaseService] Error fetching discovery: $e');
-      return List<ProfileModel>.from(MockDataService.discoveryProfiles);
+      return [];
     }
   }
 
@@ -147,9 +130,7 @@ class SupabaseService {
     required String swipedId,
     required String action,
   }) async {
-    if (_useMockMode || client == null) {
-      return action == 'like' || action == 'superlike';
-    }
+    if (client == null) return false;
 
     try {
       await client!.from('swipes').upsert({
@@ -173,8 +154,8 @@ class SupabaseService {
   }
 
   Future<List<MatchModel>> fetchMatches(String currentUserId) async {
-    if (_useMockMode || client == null) {
-      return MockDataService.getInitialMatches();
+    if (client == null || currentUserId.isEmpty) {
+      return [];
     }
 
     try {
@@ -192,13 +173,13 @@ class SupabaseService {
       }).toList();
     } catch (e) {
       debugPrint('[SupabaseService] Error fetching matches: $e');
-      return MockDataService.getInitialMatches();
+      return [];
     }
   }
 
   Future<List<MessageModel>> fetchMessages(String matchId) async {
-    if (_useMockMode || client == null) {
-      return MockDataService.getMockMessagesForMatch(matchId);
+    if (client == null || matchId.isEmpty) {
+      return [];
     }
 
     try {
@@ -213,7 +194,7 @@ class SupabaseService {
           .toList();
     } catch (e) {
       debugPrint('[SupabaseService] Error fetching messages: $e');
-      return MockDataService.getMockMessagesForMatch(matchId);
+      return [];
     }
   }
 
@@ -223,7 +204,7 @@ class SupabaseService {
     required String content,
   }) async {
     final message = MessageModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
       matchId: matchId,
       senderId: senderId,
       content: content,
@@ -231,7 +212,7 @@ class SupabaseService {
       isRead: false,
     );
 
-    if (_useMockMode || client == null) {
+    if (client == null) {
       return message;
     }
 
@@ -251,9 +232,7 @@ class SupabaseService {
   }
 
   Future<String?> uploadProfilePhoto(String userId, File photoFile) async {
-    if (_useMockMode || client == null) {
-      return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80';
-    }
+    if (client == null) return null;
 
     try {
       final ext = photoFile.path.split('.').last;
@@ -268,9 +247,7 @@ class SupabaseService {
   }
 
   Future<bool> updateProfile(ProfileModel profile) async {
-    if (_useMockMode || client == null) {
-      return true;
-    }
+    if (client == null) return false;
 
     try {
       await client!.from('profiles').upsert(profile.toJson());

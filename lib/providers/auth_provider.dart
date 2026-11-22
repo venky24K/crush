@@ -1,9 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:crush/core/constants/app_constants.dart';
-import 'package:crush/core/services/mock_data_service.dart';
 import 'package:crush/core/services/supabase_service.dart';
 import 'package:crush/models/profile_model.dart';
 
@@ -13,12 +10,10 @@ class AuthProvider extends ChangeNotifier {
   ProfileModel? _currentProfile;
   bool _isLoading = false;
   bool _isAuthenticated = false;
-  bool _isDemoMode = true;
 
   ProfileModel? get currentProfile => _currentProfile;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
-  bool get isDemoMode => _isDemoMode;
 
   AuthProvider() {
     _init();
@@ -28,26 +23,10 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    final prefs = await SharedPreferences.getInstance();
-    final hasRealKeys = !AppConstants.defaultSupabaseUrl.contains('your-project');
-    _isDemoMode = prefs.getBool(AppConstants.prefsDemoModeKey) ?? !hasRealKeys;
-    _supabaseService.enableMockMode(_isDemoMode);
-
     _currentProfile = await _supabaseService.getCurrentUserProfile();
     _isAuthenticated = _currentProfile != null;
 
     _isLoading = false;
-    notifyListeners();
-  }
-
-  void toggleDemoMode(bool enable) async {
-    _isDemoMode = enable;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppConstants.prefsDemoModeKey, enable);
-    _supabaseService.enableMockMode(enable);
-
-    _currentProfile = await _supabaseService.getCurrentUserProfile();
-    _isAuthenticated = _currentProfile != null;
     notifyListeners();
   }
 
@@ -56,15 +35,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      if (_isDemoMode) {
-        await Future.delayed(const Duration(milliseconds: 600));
-        _currentProfile = MockDataService.currentUser;
-        _isAuthenticated = true;
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      }
-
       final client = _supabaseService.client;
       if (client == null) throw Exception('Supabase not configured');
 
@@ -75,7 +45,7 @@ class AuthProvider extends ChangeNotifier {
 
       if (authResponse.user != null) {
         _currentProfile = await _supabaseService.getCurrentUserProfile();
-        _isAuthenticated = true;
+        _isAuthenticated = _currentProfile != null;
         _isLoading = false;
         notifyListeners();
         return true;
@@ -94,13 +64,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      if (_isDemoMode) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      }
-
       final success =
           await _supabaseService.signInWithOAuth(OAuthProvider.google);
       _currentProfile = await _supabaseService.getCurrentUserProfile();
@@ -121,13 +84,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      if (_isDemoMode) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      }
-
       final success =
           await _supabaseService.signInWithOAuth(OAuthProvider.apple);
       _currentProfile = await _supabaseService.getCurrentUserProfile();
@@ -159,13 +115,13 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final user = _supabaseService.client?.auth.currentUser;
+      final userId = user?.id ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
+
       final userEmail = email ??
           (_currentProfile?.email.isNotEmpty == true
               ? _currentProfile!.email
-              : 'user@crush.app');
-
-      final userId = _supabaseService.client?.auth.currentUser?.id ??
-          'user_${DateTime.now().millisecondsSinceEpoch}';
+              : (user?.email ?? 'user@crush.app'));
 
       final profile = ProfileModel(
         id: userId,
@@ -181,7 +137,7 @@ class AuthProvider extends ChangeNotifier {
         interests: interests,
       );
 
-      if (!_isDemoMode && _supabaseService.client != null) {
+      if (_supabaseService.client != null) {
         await _supabaseService.updateProfile(profile);
       }
 
@@ -211,28 +167,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      if (_isDemoMode) {
-        await Future.delayed(const Duration(milliseconds: 700));
-        _currentProfile = ProfileModel(
-          id: 'user_new_${DateTime.now().millisecondsSinceEpoch}',
-          email: email,
-          fullName: fullName,
-          birthDate: birthDate,
-          gender: gender,
-          photos: photos.isNotEmpty
-              ? photos
-              : [
-                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'
-                ],
-          interests: interests,
-          city: 'San Francisco, CA',
-        );
-        _isAuthenticated = true;
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      }
-
       final client = _supabaseService.client;
       if (client == null) throw Exception('Supabase not configured');
 
@@ -281,7 +215,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    if (!_isDemoMode && _supabaseService.client != null) {
+    if (_supabaseService.client != null) {
       await _supabaseService.client!.auth.signOut();
     }
     _currentProfile = null;
