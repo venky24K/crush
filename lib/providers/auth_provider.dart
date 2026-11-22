@@ -304,14 +304,11 @@ class AuthProvider extends ChangeNotifier {
               if (uploadedUrl != null && uploadedUrl.isNotEmpty) {
                 finalPhotos.add(uploadedUrl);
               } else {
-                finalPhotos.add(p);
+                debugPrint('[AuthProvider] Photo upload failed for local path: $p');
               }
-            } else {
-              finalPhotos.add(p);
             }
           } catch (e) {
             debugPrint('[AuthProvider] Photo upload error: $e');
-            finalPhotos.add(p);
           }
         }
       }
@@ -419,14 +416,11 @@ class AuthProvider extends ChangeNotifier {
               if (uploadedUrl != null && uploadedUrl.isNotEmpty) {
                 finalPhotos.add(uploadedUrl);
               } else {
-                finalPhotos.add(p);
+                debugPrint('[AuthProvider] Update photo upload failed for path: $p');
               }
-            } else {
-              finalPhotos.add(p);
             }
           } catch (e) {
             debugPrint('[AuthProvider] Update photo upload error: $e');
-            finalPhotos.add(p);
           }
         }
       }

@@ -236,14 +236,116 @@ class SupabaseService {
     if (client == null) return null;
 
     try {
-      final ext = photoFile.path.split('.').last;
+      final ext = photoFile.path.split('.').last.toLowerCase();
+      final mimeType = ext == 'png'
+          ? 'image/png'
+          : (ext == 'webp' ? 'image/webp' : 'image/jpeg');
       final fileName = '$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
-      await client!.storage.from('avatars').upload(fileName, photoFile);
+      await client!.storage.from('avatars').upload(
+            fileName,
+            photoFile,
+            fileOptions: FileOptions(
+              contentType: mimeType,
+              upsert: true,
+            ),
+          );
       final publicUrl = client!.storage.from('avatars').getPublicUrl(fileName);
       return publicUrl;
     } catch (e) {
       debugPrint('[SupabaseService] Photo upload error: $e');
       return null;
+    }
+  }
+
+  Future<MatchModel?> fetchMatchById(
+    String matchId,
+    String currentUserId,
+  ) async {
+    if (client == null || matchId.isEmpty) return null;
+
+    try {
+      final response = await client!
+          .from('matches')
+          .select('*, user1:profiles!user1_id(*), user2:profiles!user2_id(*)')
+          .eq('id', matchId)
+          .maybeSingle();
+
+      if (response == null) return null;
+
+      final isUser1Me = response['user1_id'] == currentUserId;
+      final otherUserJson = isUser1Me ? response['user2'] : response['user1'];
+      if (otherUserJson == null) return null;
+
+      final otherProfile = ProfileModel.fromJson(otherUserJson);
+      return MatchModel.fromJson(response, otherProfile);
+    } catch (e) {
+      debugPrint('[SupabaseService] Error fetching match by id: $e');
+      return null;
+    }
+  }
+
+  RealtimeChannel? subscribeToUserMatches(
+    String currentUserId,
+    void Function(Map<String, dynamic> record) onMatch,
+  ) {
+    if (client == null || currentUserId.isEmpty) return null;
+
+    final channelName = 'user_matches_$currentUserId';
+    final channel = client!.channel(channelName);
+    channel.onPostgresChanges(
+      event: PostgresChangeEvent.insert,
+      schema: 'public',
+      table: 'matches',
+      callback: (payload) {
+        final newRecord = payload.newRecord;
+        final u1 = newRecord['user1_id'] as String?;
+        final u2 = newRecord['user2_id'] as String?;
+        if (u1 == currentUserId || u2 == currentUserId) {
+          onMatch(newRecord);
+        }
+      },
+    ).subscribe();
+
+    return channel;
+  }
+
+  RealtimeChannel? subscribeToMessages(
+    String matchId,
+    void Function(MessageModel message) onMessage,
+  ) {
+    if (client == null || matchId.isEmpty) return null;
+
+    final channelName = 'messages_$matchId';
+    final channel = client!.channel(channelName);
+    channel.onPostgresChanges(
+      event: PostgresChangeEvent.insert,
+      schema: 'public',
+      table: 'messages',
+      filter: PostgresChangeFilter(
+        type: PostgresChangeFilterType.eq,
+        column: 'match_id',
+        value: matchId,
+      ),
+      callback: (payload) {
+        try {
+          final msg = MessageModel.fromJson(payload.newRecord);
+          onMessage(msg);
+        } catch (e) {
+          debugPrint('[SupabaseService] Error parsing realtime message: $e');
+        }
+      },
+    ).subscribe();
+
+    return channel;
+  }
+
+  Future<void> unsubscribeChannel(RealtimeChannel? channel) async {
+    if (channel != null && client != null) {
+      try {
+        await client!.removeChannel(channel);
+      } catch (e) {
+        debugPrint('[SupabaseService] Error removing channel: $e');
+      }
     }
   }
 

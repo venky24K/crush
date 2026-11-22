@@ -28,12 +28,18 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ChatProvider>().loadMessages(widget.match.id);
+      if (!mounted) return;
+      final chatProvider = context.read<ChatProvider>();
+      chatProvider.loadMessages(widget.match.id);
+      chatProvider.subscribeToChatMessages(widget.match.id);
     });
   }
 
   @override
   void dispose() {
+    try {
+      context.read<ChatProvider>().unsubscribeFromChatMessages();
+    } catch (_) {}
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();

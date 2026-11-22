@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:crush/core/services/supabase_service.dart';
 import 'package:crush/models/match_model.dart';
 import 'package:crush/models/message_model.dart';
@@ -10,6 +11,15 @@ class ChatProvider extends ChangeNotifier {
   List<MatchModel> _matches = [];
   final Map<String, List<MessageModel>> _messagesByMatch = {};
   bool _isLoading = false;
+
+  RealtimeChannel? _matchesChannel;
+  RealtimeChannel? _currentChatChannel;
+  String? _currentUserId;
+  String? _activeChatMatchId;
+
+  /// High priority notifier for in-app match alerts (e.g. SnackBars, Dialogs)
+  final ValueNotifier<MatchModel?> newMatchNotifier =
+      ValueNotifier<MatchModel?>(null);
 
   List<MatchModel> get matches => _matches;
   bool get isLoading => _isLoading;
@@ -29,6 +39,76 @@ class ChatProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  /// Subscribe to realtime match creation for the current logged-in user
+  void subscribeToMatches(String userId) {
+    if (userId.isEmpty) return;
+    if (_currentUserId == userId && _matchesChannel != null) return;
+    _currentUserId = userId;
+
+    if (_matchesChannel != null) {
+      _supabaseService.unsubscribeChannel(_matchesChannel);
+      _matchesChannel = null;
+    }
+
+    _matchesChannel = _supabaseService.subscribeToUserMatches(userId, (record) async {
+      final matchId = record['id'] as String?;
+      if (matchId == null) return;
+
+      // Fetch the full match with the other user's profile
+      final newMatch = await _supabaseService.fetchMatchById(matchId, userId);
+      if (newMatch != null) {
+        final existingIndex = _matches.indexWhere((m) => m.id == newMatch.id);
+        if (existingIndex == -1) {
+          _matches.insert(0, newMatch.copyWith(hasUnread: true));
+        } else {
+          _matches[existingIndex] = newMatch;
+        }
+
+        // Trigger in-app notification banner
+        newMatchNotifier.value = newMatch;
+        notifyListeners();
+      }
+    });
+  }
+
+  /// Subscribe to live messages inside an active chat session
+  void subscribeToChatMessages(String matchId) {
+    if (matchId.isEmpty || _activeChatMatchId == matchId) return;
+    _activeChatMatchId = matchId;
+
+    if (_currentChatChannel != null) {
+      _supabaseService.unsubscribeChannel(_currentChatChannel);
+      _currentChatChannel = null;
+    }
+
+    _currentChatChannel = _supabaseService.subscribeToMessages(matchId, (msg) {
+      final currentList = _messagesByMatch[matchId] ?? [];
+      final exists = currentList.any((m) => m.id == msg.id);
+      if (!exists) {
+        _messagesByMatch[matchId] = [...currentList, msg];
+
+        final matchIndex = _matches.indexWhere((m) => m.id == matchId);
+        if (matchIndex != -1) {
+          _matches[matchIndex] = _matches[matchIndex].copyWith(
+            lastMessage: msg.content,
+            lastMessageAt: msg.createdAt,
+          );
+        }
+
+        notifyListeners();
+      }
+    });
+  }
+
+  /// Unsubscribe from chat messages when leaving ChatScreen
+  void unsubscribeFromChatMessages() {
+    if (_currentChatChannel != null) {
+      _supabaseService.unsubscribeChannel(_currentChatChannel);
+      _currentChatChannel = null;
+    }
+    _activeChatMatchId = null;
   }
 
   void addMatchFromSwipe(ProfileModel matchedProfile) {
@@ -89,5 +169,19 @@ class ChatProvider extends ChangeNotifier {
 
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    if (_matchesChannel != null) {
+      _supabaseService.unsubscribeChannel(_matchesChannel);
+      _matchesChannel = null;
+    }
+    if (_currentChatChannel != null) {
+      _supabaseService.unsubscribeChannel(_currentChatChannel);
+      _currentChatChannel = null;
+    }
+    newMatchNotifier.dispose();
+    super.dispose();
   }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:crush/core/constants/app_colors.dart';
+import 'package:crush/providers/auth_provider.dart';
 import 'package:crush/providers/chat_provider.dart';
 import 'package:crush/ui/screens/discovery/discovery_screen.dart';
 import 'package:crush/ui/screens/matches/matches_screen.dart';
 import 'package:crush/ui/screens/profile/user_profile_screen.dart';
+import 'package:crush/ui/widgets/crush_image.dart';
 
 class HomeNavigationScreen extends StatefulWidget {
   const HomeNavigationScreen({super.key});
@@ -15,6 +17,99 @@ class HomeNavigationScreen extends StatefulWidget {
 
 class _HomeNavigationScreenState extends State<HomeNavigationScreen> {
   int _currentIndex = 0;
+  ChatProvider? _chatProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final auth = context.read<AuthProvider>();
+      _chatProvider = context.read<ChatProvider>();
+
+      if (auth.currentProfile != null) {
+        _chatProvider?.subscribeToMatches(auth.currentProfile!.id);
+      }
+      _chatProvider?.newMatchNotifier.addListener(_onNewMatchReceived);
+    });
+  }
+
+  @override
+  void dispose() {
+    _chatProvider?.newMatchNotifier.removeListener(_onNewMatchReceived);
+    super.dispose();
+  }
+
+  void _onNewMatchReceived() {
+    final newMatch = _chatProvider?.newMatchNotifier.value;
+    if (newMatch != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.surface,
+          elevation: 8,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
+          duration: const Duration(seconds: 5),
+          content: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CrushImage(imageUrl: newMatch.user.primaryPhoto),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '🎉 IT\'S A CRUSH!',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      'You and ${newMatch.user.fullName} liked each other!',
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  _navigateToChatTab();
+                },
+                child: const Text(
+                  'Say Hi 👋',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
 
   void _navigateToChatTab() {
     setState(() => _currentIndex = 1);
