@@ -20,6 +20,13 @@ class AppConstants {
   static const String googleAndroidClientId =
       '678975673146-os51t55cg24ltlscjq3n3137i4itm536.apps.googleusercontent.com';
 
+  // Legal & Support URLs
+  static const String privacyPolicyUrl =
+      'https://venky24k.github.io/crush/privacy.html';
+  static const String termsOfServiceUrl =
+      'https://venky24k.github.io/crush/terms.html';
+  static const String supportEmail = 'support@crush.app';
+
   // Storage Keys
   static const String prefsUserThemeKey = 'crush_user_theme';
 

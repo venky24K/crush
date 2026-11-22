@@ -307,19 +307,141 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 32),
 
-                // Legal Notice
-                const Text(
-                  'By signing up, you agree to Crush\'s Terms of Service and Privacy Policy.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textMuted,
-                    height: 1.4,
-                  ),
+                // Legal Notice with Interactive Viewers
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    const Text(
+                      'By signing up, you agree to Crush\'s ',
+                      style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    ),
+                    GestureDetector(
+                      onTap: () => _showLegalSheet(
+                        context,
+                        title: 'Terms of Service',
+                        url: 'https://venky24k.github.io/crush/terms.html',
+                      ),
+                      child: const Text(
+                        'Terms of Service',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      ' and ',
+                      style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    ),
+                    GestureDetector(
+                      onTap: () => _showLegalSheet(
+                        context,
+                        title: 'Privacy Policy',
+                        url: 'https://venky24k.github.io/crush/privacy.html',
+                      ),
+                      child: const Text(
+                        'Privacy Policy',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      '.',
+                      style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showLegalSheet(BuildContext context,
+      {required String title, required String url}) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (_, scrollController) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBorder,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const Divider(color: AppColors.cardBorder),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  children: [
+                    const SizedBox(height: 8),
+                    Text(
+                      title == 'Privacy Policy'
+                          ? 'Crush is committed to protecting your privacy and security. We do not sell your personal data to third parties. Your account credentials, photos, matches, and chats are encrypted and used solely to facilitate authentic dating connections.\n\n'
+                              '• Age Requirement: Crush is strictly for users 18 years of age or older.\n\n'
+                              '• Data Collection: We collect account profile information (name, age, gender, preferences) and photos you explicitly upload to construct your dating profile.\n\n'
+                              '• Account Deletion: You may permanently delete your Crush account at any time within the app (My Profile > Account Settings > Delete Account). Upon deletion, all your photos, matches, and messages are permanently purged immediately.\n\n'
+                              '• Live URL: $url'
+                          : 'Welcome to Crush. By using our application, you agree to our community standards and terms.\n\n'
+                              '• Zero Tolerance: Crush strictly prohibits nudity, harassment, hate speech, spam, and underage usage. Violating accounts are permanently banned without notice.\n\n'
+                              '• Safety: You may block any match at any time, or report suspicious or abusive accounts directly from their profile card or chat screen.\n\n'
+                              '• Live URL: $url',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        height: 1.6,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
