@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:crush/core/constants/app_colors.dart';
 import 'package:crush/providers/auth_provider.dart';
 import 'package:crush/ui/screens/profile/edit_profile_screen.dart';
+import 'package:crush/ui/widgets/crush_image.dart';
 
 class UserProfileScreen extends StatelessWidget {
   const UserProfileScreen({super.key});
@@ -47,7 +47,8 @@ class UserProfileScreen extends StatelessWidget {
                     ),
                     child: CircleAvatar(
                       radius: 64,
-                      backgroundImage: CachedNetworkImageProvider(
+                      backgroundColor: AppColors.surfaceLight,
+                      backgroundImage: crushImageProvider(
                         profile.primaryPhoto,
                       ),
                     ),

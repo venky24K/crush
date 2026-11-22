@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:crush/core/constants/app_colors.dart';
 import 'package:crush/core/constants/app_constants.dart';
 import 'package:crush/providers/auth_provider.dart';
+import 'package:crush/ui/widgets/crush_image.dart';
 import 'package:crush/ui/widgets/interest_chip.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -627,16 +627,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             itemBuilder: (context, index) {
               if (index < _photos.length) {
                 final photoUrl = _photos[index];
-                final isLocal = !photoUrl.startsWith('http');
 
                 return Stack(
                   fit: StackFit.expand,
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(14),
-                      child: isLocal
-                          ? Image.file(File(photoUrl), fit: BoxFit.cover)
-                          : Image.network(photoUrl, fit: BoxFit.cover),
+                      child: CrushImage(
+                        imageUrl: photoUrl,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                     if (index == 0)
                       Positioned(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:crush/core/constants/app_colors.dart';
@@ -7,6 +6,7 @@ import 'package:crush/core/constants/app_constants.dart';
 import 'package:crush/models/match_model.dart';
 import 'package:crush/providers/auth_provider.dart';
 import 'package:crush/providers/chat_provider.dart';
+import 'package:crush/ui/widgets/crush_image.dart';
 
 class ChatScreen extends StatefulWidget {
   final MatchModel match;
@@ -87,7 +87,8 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundImage: CachedNetworkImageProvider(
+                  backgroundColor: AppColors.surfaceLight,
+                  backgroundImage: crushImageProvider(
                     widget.match.user.primaryPhoto,
                   ),
                 ),
@@ -283,7 +284,8 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             CircleAvatar(
               radius: 44,
-              backgroundImage: CachedNetworkImageProvider(
+              backgroundColor: AppColors.surfaceLight,
+              backgroundImage: crushImageProvider(
                 widget.match.user.primaryPhoto,
               ),
             ),

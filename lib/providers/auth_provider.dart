@@ -189,6 +189,33 @@ class AuthProvider extends ChangeNotifier {
       final user = _supabaseService.client?.auth.currentUser;
       final userId = user?.id ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
 
+      // Upload any local photos to Supabase Storage if possible
+      final List<String> finalPhotos = [];
+      for (final p in photos) {
+        if (p.startsWith('http://') || p.startsWith('https://')) {
+          finalPhotos.add(p);
+        } else {
+          try {
+            final cleanPath = p.replaceFirst('file://', '');
+            final file = File(cleanPath);
+            if (await file.exists()) {
+              final uploadedUrl =
+                  await _supabaseService.uploadProfilePhoto(userId, file);
+              if (uploadedUrl != null && uploadedUrl.isNotEmpty) {
+                finalPhotos.add(uploadedUrl);
+              } else {
+                finalPhotos.add(p);
+              }
+            } else {
+              finalPhotos.add(p);
+            }
+          } catch (e) {
+            debugPrint('[AuthProvider] Photo upload error: $e');
+            finalPhotos.add(p);
+          }
+        }
+      }
+
       final userEmail = email ??
           (_currentProfile?.email.isNotEmpty == true
               ? _currentProfile!.email
@@ -204,7 +231,7 @@ class AuthProvider extends ChangeNotifier {
         bio: bio,
         occupation: occupation,
         city: city,
-        photos: photos,
+        photos: finalPhotos.isNotEmpty ? finalPhotos : photos,
         interests: interests,
       );
 
@@ -273,9 +300,48 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> updateProfile(ProfileModel updatedProfile) async {
-    _currentProfile = updatedProfile;
+    _isLoading = true;
     notifyListeners();
-    await _supabaseService.updateProfile(updatedProfile);
+
+    try {
+      final userId = updatedProfile.id;
+      final List<String> finalPhotos = [];
+      for (final p in updatedProfile.photos) {
+        if (p.startsWith('http://') || p.startsWith('https://')) {
+          finalPhotos.add(p);
+        } else {
+          try {
+            final cleanPath = p.replaceFirst('file://', '');
+            final file = File(cleanPath);
+            if (await file.exists()) {
+              final uploadedUrl =
+                  await _supabaseService.uploadProfilePhoto(userId, file);
+              if (uploadedUrl != null && uploadedUrl.isNotEmpty) {
+                finalPhotos.add(uploadedUrl);
+              } else {
+                finalPhotos.add(p);
+              }
+            } else {
+              finalPhotos.add(p);
+            }
+          } catch (e) {
+            debugPrint('[AuthProvider] Update photo upload error: $e');
+            finalPhotos.add(p);
+          }
+        }
+      }
+
+      final profileToSave = updatedProfile.copyWith(photos: finalPhotos);
+      _currentProfile = profileToSave;
+      if (_supabaseService.client != null) {
+        await _supabaseService.updateProfile(profileToSave);
+      }
+    } catch (e) {
+      debugPrint('[AuthProvider] updateProfile error: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
   Future<String?> uploadPhoto(File file) async {

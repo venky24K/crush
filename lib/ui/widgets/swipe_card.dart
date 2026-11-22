@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crush/core/constants/app_colors.dart';
 import 'package:crush/models/profile_model.dart';
+import 'package:crush/ui/widgets/crush_image.dart';
 
 class SwipeCard extends StatefulWidget {
   final ProfileModel profile;
@@ -57,16 +57,14 @@ class _SwipeCardState extends State<SwipeCard> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Current Photo
-            CachedNetworkImage(
+            // Current Photo (supports network URLs & local file paths seamlessly)
+            CrushImage(
               imageUrl: photos[safeIndex],
               fit: BoxFit.cover,
-              // ⚡ PERF: Static ColoredBox instead of CircularProgressIndicator
-              // — avoids running a spinner animation on every background card
-              placeholder: (context, url) => const ColoredBox(
+              placeholder: const ColoredBox(
                 color: AppColors.surfaceLight,
               ),
-              errorWidget: (context, url, error) => Container(
+              errorWidget: Container(
                 color: AppColors.surfaceLight,
                 child: const Icon(
                   Icons.person,

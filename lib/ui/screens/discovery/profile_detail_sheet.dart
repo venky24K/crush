@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crush/core/constants/app_colors.dart';
 import 'package:crush/models/profile_model.dart';
+import 'package:crush/ui/widgets/crush_image.dart';
 import 'package:crush/ui/widgets/interest_chip.dart';
 
 class ProfileDetailSheet extends StatelessWidget {
@@ -59,7 +59,7 @@ class ProfileDetailSheet extends StatelessWidget {
                           itemBuilder: (context, index) {
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(20),
-                              child: CachedNetworkImage(
+                              child: CrushImage(
                                 imageUrl: photos[index],
                                 width: 280,
                                 fit: BoxFit.cover,

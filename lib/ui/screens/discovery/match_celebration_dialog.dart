@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crush/core/constants/app_colors.dart';
 import 'package:crush/models/profile_model.dart';
+import 'package:crush/ui/widgets/crush_image.dart';
 
 class MatchCelebrationDialog extends StatelessWidget {
   final ProfileModel currentUser;
@@ -175,8 +175,10 @@ class MatchCelebrationDialog extends StatelessWidget {
         ],
       ),
       child: ClipOval(
-        child: CachedNetworkImage(
+        child: CrushImage(
           imageUrl: photoUrl,
+          width: 100,
+          height: 100,
           fit: BoxFit.cover,
         ),
       ),

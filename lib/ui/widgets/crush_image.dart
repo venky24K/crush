@@ -1,0 +1,142 @@
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:crush/core/constants/app_colors.dart';
+
+/// Universal image display widget that gracefully handles:
+/// 1. Remote HTTP/HTTPS URLs (via CachedNetworkImage with caching & shimmer)
+/// 2. Local device file paths (/var/mobile/..., /Users/..., file://...)
+/// 3. Missing/broken files (with a clean branded fallback rather than red 'X' errors)
+class CrushImage extends StatelessWidget {
+  final String? imageUrl;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final BorderRadius? borderRadius;
+  final Widget? placeholder;
+  final Widget? errorWidget;
+
+  const CrushImage({
+    super.key,
+    required this.imageUrl,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.borderRadius,
+    this.placeholder,
+    this.errorWidget,
+  });
+
+  bool get _isNetwork {
+    if (imageUrl == null) return false;
+    final url = imageUrl!.trim();
+    return url.startsWith('http://') || url.startsWith('https://');
+  }
+
+  Widget _buildPlaceholder() {
+    if (placeholder != null) return placeholder!;
+    return Container(
+      width: width,
+      height: height,
+      color: AppColors.surfaceLight,
+      child: const Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.primary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFallback() {
+    if (errorWidget != null) return errorWidget!;
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: borderRadius,
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.person_rounded,
+          color: AppColors.textMuted,
+          size: 36,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget imageWidget;
+
+    final url = imageUrl?.trim() ?? '';
+
+    if (url.isEmpty) {
+      imageWidget = _buildFallback();
+    } else if (_isNetwork) {
+      imageWidget = CachedNetworkImage(
+        imageUrl: url,
+        width: width,
+        height: height,
+        fit: fit,
+        placeholder: (context, _) => _buildPlaceholder(),
+        errorWidget: (context, _, error) => _buildFallback(),
+      );
+    } else {
+      // Local device file path
+      final cleanPath = url.replaceFirst('file://', '');
+      final file = File(cleanPath);
+
+      if (file.existsSync()) {
+        imageWidget = Image.file(
+          file,
+          width: width,
+          height: height,
+          fit: fit,
+          errorBuilder: (context, _, error) => _buildFallback(),
+        );
+      } else {
+        imageWidget = _buildFallback();
+      }
+    }
+
+    if (borderRadius != null) {
+      return ClipRRect(
+        borderRadius: borderRadius!,
+        child: imageWidget,
+      );
+    }
+
+    return imageWidget;
+  }
+}
+
+/// Helper function to create an ImageProvider for CircleAvatar / BoxDecoration
+ImageProvider crushImageProvider(String? photoUri) {
+  if (photoUri == null || photoUri.trim().isEmpty) {
+    return const NetworkImage(
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
+    );
+  }
+
+  final uri = photoUri.trim();
+  if (uri.startsWith('http://') || uri.startsWith('https://')) {
+    return CachedNetworkImageProvider(uri);
+  }
+
+  final cleanPath = uri.replaceFirst('file://', '');
+  final file = File(cleanPath);
+  if (file.existsSync()) {
+    return FileImage(file);
+  }
+
+  return const NetworkImage(
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
+  );
+}
