@@ -1,6 +1,6 @@
 # 🗺️ Crush - Product & Engineering Roadmap
 
-This roadmap outlines the completed milestones, current capabilities, and future vision for **Crush** — from core swipe mechanics to comprehensive account onboarding, AI-assisted matching, safety systems, and global monetization.
+This roadmap outlines completed milestones, current capabilities, and future vision for **Crush** — from core swipe mechanics and native authentication to page-by-page UX polish, real-time messaging, AI safety, and global monetization.
 
 ---
 
@@ -8,39 +8,33 @@ This roadmap outlines the completed milestones, current capabilities, and future
 
 ```mermaid
 flowchart LR
-    A["Phase 1: Core MVP & Backend (Done)"] --> B["Phase 1.5: Brand, UI/UX & Perf (Done)"]
-    B --> C["Phase 2: Account Creation, Auth & Geo (Next)"]
-    C --> D["Phase 3: Monetization & Revenue"]
-    D --> E["Phase 4: AI & Trust Safety"]
+    A["Phase 1: Core MVP & Backend (Done)"] --> B["Phase 1.5: Brand & Light Theme (Done)"]
+    B --> C["Phase 2: Native Auth, Storage & TestFlight (Done)"]
+    C --> D["Phase 3: Page-by-Page UX Polish (Current)"]
+    D --> E["Phase 4: Notifications & Geolocation"]
+    E --> F["Phase 5: Subscriptions & Monetization"]
+    F --> G["Phase 6: AI Matching & Trust Safety"]
 ```
 
 ---
 
 ## ✅ Phase 1: Core MVP & Foundation *(Completed)*
 
-- [x] **Flutter Architecture & State Management**
+- [x] **Flutter Architecture & Clean State Management**
   - Modular clean-architecture project structure (`core`, `models`, `providers`, `ui`, `services`).
   - Provider state architecture separating Auth, Discovery, and Chat concerns.
-  - Zero-config offline Demo Mode with 5 rich mock profiles and simulated automated chat replies.
+  - Live Supabase connection with graceful fallback handling.
 - [x] **Gesture Card Swiping Deck**
   - Card swiper with physics-driven gestures (Right: Like, Left: Pass, Up: Super Crush).
   - Multi-photo carousel on cards with story progress indicators and tap edge navigation.
-  - Floating action buttons with micro-press physics: Rewind, Dislike, Super Crush, Like, and Boost.
+  - Floating action buttons: Rewind, Dislike, Super Crush, Like, and Boost.
 - [x] **Live Supabase Backend & Database Schema**
   - PostgreSQL schema with Row-Level Security (RLS) on `profiles`, `swipes`, `matches`, and `messages`.
-  - Database triggers:
-    - `handle_swipe_match`: Automatically creates mutual matches on reciprocal likes.
-    - `handle_new_message`: Updates match `last_message` and timestamps in realtime.
-  - Supabase Storage `avatars` bucket with user-isolated upload and delete policies.
+  - Database triggers for reciprocal match creation and message timestamp updates.
   - Realtime publication stream enabled for live chat and match notifications.
-- [x] **Realtime Messaging & Icebreakers**
-  - 1-on-1 chat interface with message bubbles, status indicators, and photo avatars.
-  - Interactive icebreaker suggestion pills to easily start conversations.
-  - Active matches horizontal story bar.
-- [x] **Discovery Filters & Profile Editing**
-  - Dynamic discovery filters sheet: Distance slider (5–100 km), Age range slider (18–60), and Gender preference.
+- [x] **Discovery Filters & Profile Detail Sheet**
+  - Dynamic discovery filters: Distance slider (5–100 km), Age range slider (18–60), and Gender preference.
   - Profile detail modal bottom sheet with photo gallery, bio, work, school, and passion chips.
-  - Profile edit screen supporting bio updates and multi-photo management.
 
 ---
 
@@ -48,82 +42,114 @@ flowchart LR
 
 - [x] **Brand Identity & Asset Suite**
   - Custom **crush** logo typography featuring a soft coral heart nested inside the `"u"`.
-  - Master high-res transparent wordmark (`logo_wordmark.png`) and full logo (`logo_transparent.png`).
-  - Full suite of iOS App Icons (15 resolutions from 20×20 to 1024×1024 in `AppIcon.appiconset`).
-  - Complete Android mipmap launcher icons (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`).
+  - Master high-res transparent wordmark (`logo_wordmark.png`).
+  - Full suite of iOS App Icons (15 resolutions in `AppIcon.appiconset`) and Android mipmap launcher icons.
 - [x] **Flutter Native Splash Screen**
-  - Integrated `flutter_native_splash` for instant native app startup on iOS and Android.
-  - Branded launch screen on Warm Ivory (`#FFF8F2`) background with the centered logo wordmark.
-  - Smooth native-to-Flutter transition using `FlutterNativeSplash.preserve()` and `.remove()`.
+  - Integrated `flutter_native_splash` for instant native app launch on iOS and Android.
+  - Branded launch screen on Warm Ivory (`#FFF8F2`) background with centered wordmark.
 - [x] **Crisp High-Contrast Light Theme Overhaul**
-  - Switched from dark muddy tones to a clean, modern, high-contrast light theme:
-    - **Background**: Pure `#FFFFFF` for crisp readability across Discovery, Matches, and Chat.
-    - **Containers & Search**: `#F3F4F6` (Light Neutral Grey) with subtle `#E5E7EB` borders.
+  - Switched to clean, modern, high-contrast light theme:
+    - **Background**: Pure `#FFFFFF` for crisp readability.
+    - **Containers & Search**: `#F3F4F6` with subtle `#E5E7EB` borders.
     - **Typography**: Deep Charcoal `#111827` (Headings) and Slate Grey `#4B5563` (Subtitles/Bios).
     - **Brand Accent**: Punchy Peach-Coral `#FF5364` on action buttons, badges, and active tabs.
 - [x] **60 FPS Swiping & Rendering Optimization**
-  - Eliminated swipe stutter by removing mid-animation `notifyListeners()` calls during swipe events.
-  - Implemented granular `Selector` rebuild scopes for card deck state and rewind button state.
+  - Eliminated swipe stutter; granular `Selector` rebuild scopes for card deck state.
   - Added `RepaintBoundary` wrappers around swipe cards and app bar components.
   - Fixed Material layering and invisible ink splash assertions across list tiles and bottom sheets.
-  - Guarded photo carousel indices and dynamic card counts against `RangeError` exceptions.
 
 ---
 
-## 🚀 Phase 2: Production Account Creation, Auth & Geolocation *(Next Up)*
+## ✅ Phase 2: Production Auth, Storage, Store Compliance & TestFlight *(Completed)*
 
-### 👤 2.1 Complete Account Creation & Guided Onboarding Flow
+- [x] **Native Authentication Gateways**
+  - **Sign in with Apple**: Native iOS bottom sheet with Face ID / Touch ID, SHA-256 cryptographic nonce hashing, and user metadata capture.
+  - **Sign in with Google**: Native Google Sign-In SDK (1-tap sheet) with in-app browser OAuth fallback.
+  - **Reactive 3-State Auth Machine**: Clean separation between Unauthenticated &rarr; Needs Onboarding &rarr; Fully Authenticated (`HomeNavigationScreen`).
+- [x] **9-Step Guided Onboarding Flow**
+  - First Name identity gate (prevents impersonation).
+  - Cupertino date wheel with strict 18+ legal age verification check.
+  - Gender identity & dating preference selection.
+  - Relationship intentions / dating goals with punchy tags.
+  - 6-slot photo grid with primary avatar badge.
+  - Searchable interest chip selector (5+ required).
+  - Location setup with automatic pre-fill.
+  - Bio, occupation, and school configuration.
+  - 4-point community safety pledge.
+- [x] **Universal Photo Engine (`CrushImage` & `crushImageProvider`)**
+  - Dual support for local device file paths (`/var/mobile/...`, `file://`) and remote Supabase CDN URLs (`https://...`).
+  - Elimination of broken image red "X" errors with branded loading shimmers and fallback avatars.
+  - Interactive photo picker on Edit Profile (Gallery, Camera, Sample photo).
+- [x] **Cloud Storage & Database Infrastructure**
+  - Supabase Storage `avatars` bucket configured, verified public, and connected to upload pipelines.
+  - Realtime enabled on `messages` table for instant live message delivery.
+- [x] **App Store & Google Play Policy Compliance**
+  - Apple Guideline 5.1.1(v) permanent in-app **Account Deletion** flow with confirmation dialog.
+  - Apple Guideline 1.2 **Block & Report User** safety controls in chat & profile details.
+  - iOS `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`, and `ITSAppUsesNonExemptEncryption = false`.
+  - Android release permissions (`INTERNET`, `CAMERA`, `READ_MEDIA_IMAGES`).
+  - Hosted legal pages deployed on GitHub Pages:
+    - Privacy Policy: `https://venky24k.github.io/crush/privacy.html`
+    - Terms of Service: `https://venky24k.github.io/crush/terms.html`
+    - Landing Page: `https://venky24k.github.io/crush/`
+  - In-app interactive legal bottom sheet on login screen.
+- [x] **Production iOS Release & TestFlight**
+  - Production `.ipa` built, code-signed, and delivered via Apple Transporter.
+  - App Store Connect app record registered (`com.vardhan.crush.app`).
+  - App encryption export compliance verified & build live on **Apple TestFlight**.
 
-- [ ] **Multi-Provider Authentication Gateways**
-  - **Sign in with Apple**: Native Sign-In flow with Apple Developer Service ID and Supabase Apple Auth (mandatory for iOS App Store approval).
-  - **Sign in with Google**: One-tap OAuth 2.0 flow with profile pre-fill (name, photo, email).
-  - **Phone Number (SMS OTP)**: Phone number verification with 6-digit auto-fill via Twilio / MessageBird on Supabase.
-  - **Email / Password**: With format validation and instant sign-up confirmation.
-- [ ] **Multi-Step Guided Profile Creation Funnel (Interactive Wizard)**
-  - **Step 1: First Name**: Required display name (locked post-creation to prevent catfishing and impersonation).
-  - **Step 2: Birthday & Age Verification**:
-    - Cupertino/Material date picker enforcing strict 18+ age verification check.
-    - Real-time age display with legal compliance (COPPA & App Store guidelines).
-  - **Step 3: Identity & Attraction**:
-    - My Gender: *Woman, Man, Non-Binary, Custom*.
-    - Show Me (Dating Preference): *Women, Men, Everyone*.
-  - **Step 4: Relationship Goals / Intentions**:
-    - Select primary intention: *Long-term partner, Casual dating, Marriage-minded, New friends, Still figuring it out*.
-  - **Step 5: Photo Upload (Minimum 2 Photos Required)**:
-    - 6-slot photo grid with drag-and-drop reordering.
-    - Integrated photo cropper & compression before upload to Supabase Storage `avatars/<uid>/`.
-    - Primary avatar selector badge (*"Main photo displayed on cards"*).
-  - **Step 6: Interests & Passions (Select 5+)**:
-    - Searchable categorized interest chip selector (Creativity, Sports, Travel, Food & Drink, Entertainment, Pets).
-  - **Step 7: Location Setup & Geocoding**:
-    - One-tap GPS permission prompt.
-    - Automatic reverse-geocoding into `city` / neighborhood for display on card headers.
-  - **Step 8: Bio & Personality Prompts (Hinge-Style)**:
-    - Choose 2–3 fun prompt cards (*"A typical Sunday for me looks like...", "My biggest green flag is...", "Dating me is like..."*).
-  - **Step 9: Community Pledge & Rules**:
-    - Mandatory 4-point anti-harassment, authenticity, and respect pledge before entering the discovery deck.
-- [ ] **Progressive Draft Saving & Resumption**
-  - Add `onboarding_completed: boolean default false` column to `public.profiles`.
-  - Save progress incrementally at each step so users who exit can resume where they left off.
-  - `AuthGate` router directs users to complete onboarding before accessing the main feed.
+---
 
-### 📍 2.2 Geolocation & Push Notifications
+## 🎨 Phase 3: Page-by-Page UX Polish & Micro-Interactions *(Current Sprint)*
 
+This phase elevates Crush from a working prototype into a consumer-grade dating app with fluid physics, haptics, and delight across each individual screen:
+
+### 🃏 3.1 Discovery & Swipe Card Screen
+- [ ] **Instagram-Style Story Photo Navigation**: Tap left 30% of card for previous photo, tap right 70% for next photo, with top progress bars.
+- [ ] **Swipe Haptic Feedback**: Light haptic tick on drag threshold; crisp tactile feedback on Like, Nope, and Super Like (`HapticFeedback.mediumImpact()`).
+- [ ] **Rewind / Undo Action**: Functional rewind restoring the previously swiped card back to the top of the deck.
+- [ ] **Super Like Particle Burst**: Animated gold/blue star burst with micro-confetti on Super Like.
+- [ ] **Match Celebration Screen**: Synchronized dual-photo pulse animation with instant "Send a message" input field.
+
+### 📝 3.2 Onboarding Flow (9 Steps)
+- [ ] **Hinge-Style Personality Prompts**: Pick and answer 2–3 fun prompt cards (*"A typical Sunday for me looks like...", "My biggest green flag is..."*).
+- [ ] **Photo Quality Validator & Drag Reorder**: Drag-and-drop to reorder photo hierarchy; minimum resolution hints.
+- [ ] **Animated Step Indicator**: Smooth sliding progress bar with percentage and step transitions.
+
+### 💬 3.3 Matches & Real-Time Chat
+- [ ] **Interactive Conversation Starters**: Tappable icebreaker question pills in empty chats that auto-fill the input field.
+- [ ] **Online Activity Indicators & Read Receipts**: Real-time "Active now" badges and `✓✓` read receipts on delivered messages.
+- [ ] **In-Chat Photo Sharing**: Camera and gallery attachments directly inside private conversations.
+- [ ] **Typing Indicator Animation**: Animated 3-dot bubble showing when the other person is typing.
+
+### 👤 3.4 User Profile & Edit Suite
+- [ ] **"Preview Profile" Mode**: 1-tap preview toggle allowing users to view their profile exactly as prospective matches see it.
+- [ ] **Profile Completeness Gauge**: Circular or bar meter (*"85% complete — add 2 more passions to get 3x matches"*).
+- [ ] **Discovery Preference Controls**: Age range dual-slider and distance radius slider saving directly to Supabase profile preferences.
+
+### 🔐 3.5 Login & Welcome Gateway
+- [ ] **Ambient Motion Background**: Subtle floating coral/warm ivory gradient or gentle heart particles.
+- [ ] **Spring Micro-Interactions**: Tactile button press bounce on Apple, Google, and Email sign-in buttons.
+
+---
+
+## 📍 Phase 4: Push Notifications & Geolocation *(Next Up)*
+
+- [ ] **Push Notifications (APNs / FCM)**
+  - Firebase Cloud Messaging integration for iOS (APNs) and Android.
+  - Triggered push alerts on:
+    - Mutual match (*"It's a Match! Say hello to [Name]"*).
+    - New chat message.
+    - Super Like received.
 - [ ] **Live Geolocation & PostGIS Distance Queries**
   - Device GPS coordinate capture via `geolocator` with permission dialogs.
   - PostgreSQL PostGIS queries (`ST_DWithin`, `ST_DistanceSphere`) to calculate exact distances and filter profiles dynamically within the user's selected radius.
-- [ ] **Push Notifications (FCM / APNs)**
-  - Firebase Cloud Messaging integration for iOS (APNs) and Android.
-  - Push triggers on:
-    - Mutual match (*"It's a Match! Say hello to [Name]"*).
-    - Incoming chat message.
-    - Profile super likes.
 - [ ] **Voice Notes & Audio in Chat**
   - In-chat voice recording and playback with interactive waveform visualizers.
 
 ---
 
-## 💎 Phase 3: Premium Features & Monetization *(Q2)*
+## 💎 Phase 5: Premium Features & Monetization *(Q2)*
 
 - [ ] **RevenueCat In-App Purchases (IAP)**
   - Integration with Apple StoreKit 2 and Google Play Billing via RevenueCat.
@@ -143,13 +169,13 @@ flowchart LR
 
 ---
 
-## 🛡️ Phase 4: Trust, Safety & AI *(Q3)*
+## 🛡️ Phase 6: Trust, Safety & AI *(Q3)*
 
 - [ ] **Selfie Photo Verification**
   - On-device liveness and pose verification (e.g. smile, head tilt) using ML Kit.
   - Blue verified badge issued upon automated facial match against profile pictures.
 - [ ] **Gemini AI Conversation Coach & Icebreakers**
-  - Contextual opener generation powered by the Google Gemini API using mutual interests, music taste, and bio prompts.
+  - Contextual opener generation powered by the Google Gemini API using mutual interests and bio prompts.
   - Chat revival suggestions when a conversation goes quiet.
 - [ ] **Safety & Privacy Center**
   - **Date Check-In**: Share date details and live location with trusted emergency contacts.
@@ -160,16 +186,17 @@ flowchart LR
 
 ---
 
-## 📊 Suggested Implementation Priorities
+## 📊 Feature Priority Matrix
 
-| Priority | Feature | Complexity | Impact | Target Release |
+| Priority | Feature | Complexity | Impact | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **P0** | Multi-Step Guided Account Creation & Onboarding | High | Essential user acquisition & profile quality | v1.1 |
-| **P0** | Sign in with Apple & Google OAuth | Medium | Mandatory for App Store approval | v1.1 |
-
-| **P0** | Push Notifications (APNs / FCM) | Medium | Core retention and daily active usage | v1.1 |
-| **P1** | Live GPS & PostGIS Distance Queries | Medium | Discovery relevance and real matches | v1.2 |
-| **P1** | RevenueCat Subscriptions (Crush Gold) | High | Direct monetization & recurring revenue | v2.0 |
-| **P2** | Selfie Liveness Verification Badge | Medium | Trust, bot prevention & safety | v2.1 |
-| **P2** | Gemini AI Conversation Starters | Low | Chat engagement & lower drop-off | v2.2 |
-| **P3** | In-app 1-on-1 Video Calling | High | Premium dating experience | v3.0 |
+| **P0** | Native Sign in with Apple & Google OAuth | Medium | Essential for Launch | ✅ Live on TestFlight |
+| **P0** | 9-Step Guided Onboarding & Storage | High | User Acquisition & Quality | ✅ Live on TestFlight |
+| **P0** | App Store Compliance (Delete, Block/Report, Legal) | Medium | Mandatory for App Store | ✅ Live on TestFlight |
+| **P0** | Discovery Story Photo Taps & Swipe Haptics | Medium | Core App Feel & Delight | 🎨 In Progress |
+| **P0** | Chat Icebreaker Chips & Read Receipts | Low | Retention & Conversation Rate | 🎨 In Progress |
+| **P1** | Push Notifications (APNs / FCM) | Medium | Daily Active Retention | 📍 Phase 4 |
+| **P1** | Live GPS & PostGIS Distance Queries | Medium | Discovery Relevance | 📍 Phase 4 |
+| **P1** | RevenueCat Subscriptions (Crush Gold) | High | Direct Monetization | 💎 Phase 5 |
+| **P2** | Selfie Liveness Verification Badge | Medium | Trust & Anti-Bot Safety | 🛡️ Phase 6 |
+| **P2** | Gemini AI Conversation Starters | Low | Chat Engagement | 🛡️ Phase 6 |
