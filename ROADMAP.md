@@ -166,6 +166,7 @@ flowchart LR
 | :--- | :--- | :--- | :--- | :--- |
 | **P0** | Multi-Step Guided Account Creation & Onboarding | High | Essential user acquisition & profile quality | v1.1 |
 | **P0** | Sign in with Apple & Google OAuth | Medium | Mandatory for App Store approval | v1.1 |
+
 | **P0** | Push Notifications (APNs / FCM) | Medium | Core retention and daily active usage | v1.1 |
 | **P1** | Live GPS & PostGIS Distance Queries | Medium | Discovery relevance and real matches | v1.2 |
 | **P1** | RevenueCat Subscriptions (Crush Gold) | High | Direct monetization & recurring revenue | v2.0 |
