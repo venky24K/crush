@@ -46,6 +46,8 @@ dependencies:
   shared_preferences: ^2.5.6
   flutter_native_splash: ^2.4.4
   google_sign_in: ^6.2.2
+  sign_in_with_apple: ^8.2.0
+  crypto: ^3.0.8
 
 dev_dependencies:
   flutter_test:

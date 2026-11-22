@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:crush/core/constants/app_constants.dart';
 import 'package:crush/core/services/supabase_service.dart';
@@ -152,10 +156,81 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  String _generateRawNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
+        .join();
+  }
+
+  String _sha256Nonce(String rawNonce) {
+    final bytes = utf8.encode(rawNonce);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
   Future<bool> signInWithApple() async {
     _isLoading = true;
     notifyListeners();
 
+    // 1. Try Native Apple Sign-In SDK (iOS modal bottom sheet with Face ID / Touch ID)
+    if (Platform.isIOS || Platform.isMacOS) {
+      try {
+        final rawNonce = _generateRawNonce();
+        final hashedNonce = _sha256Nonce(rawNonce);
+
+        final credential = await SignInWithApple.getAppleIDCredential(
+          scopes: [
+            AppleIDAuthorizationScopes.email,
+            AppleIDAuthorizationScopes.fullName,
+          ],
+          nonce: hashedNonce,
+        );
+
+        final idToken = credential.identityToken;
+        if (idToken != null) {
+          final res = await _supabaseService.client?.auth.signInWithIdToken(
+            provider: OAuthProvider.apple,
+            idToken: idToken,
+            nonce: rawNonce,
+          );
+
+          if (res?.user != null) {
+            // Apple only returns givenName/familyName on first authorization
+            final givenName = credential.givenName;
+            final familyName = credential.familyName;
+            if (givenName != null || familyName != null) {
+              final fullName = [givenName, familyName]
+                  .where((s) => s != null && s.isNotEmpty)
+                  .join(' ');
+              if (fullName.isNotEmpty) {
+                try {
+                  await _supabaseService.client?.auth.updateUser(
+                    UserAttributes(data: {'full_name': fullName}),
+                  );
+                } catch (_) {}
+              }
+            }
+
+            _currentProfile = await _supabaseService.getCurrentUserProfile();
+            _isLoading = false;
+            notifyListeners();
+            return true;
+          }
+        }
+      } catch (e) {
+        debugPrint('[AuthProvider] Native Apple Sign-In notice: $e');
+        if (e is SignInWithAppleAuthorizationException &&
+            e.code == AuthorizationErrorCode.canceled) {
+          _isLoading = false;
+          notifyListeners();
+          return false;
+        }
+      }
+    }
+
+    // 2. Fallback to Supabase OAuth with inAppBrowserView (e.g. for non-iOS or browser)
     try {
       final success =
           await _supabaseService.signInWithOAuth(OAuthProvider.apple);
@@ -163,7 +238,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return success;
     } catch (e) {
-      debugPrint('[AuthProvider] Apple Sign-In error: $e');
+      debugPrint('[AuthProvider] Apple Sign-In OAuth error: $e');
       _isLoading = false;
       notifyListeners();
       return false;
