@@ -73,20 +73,37 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isSaving = false;
 
   // Snapshot of the original values used to detect unsaved changes.
-  late List<String> _originalPhotos;
-  late List<String> _originalInterests;
-  late Map<String, String> _originalBasics;
-  late Map<String, String> _originalLifestyle;
-  late String? _originalGoal;
-  late int? _originalHeightCm;
+  List<String> _originalPhotos = const [];
+  List<String> _originalInterests = const [];
+  Map<String, String> _originalBasics = const {};
+  Map<String, String> _originalLifestyle = const {};
+  String? _originalGoal;
+  int? _originalHeightCm;
+  List<PromptAnswer> _originalPrompts = const [];
+  String _originalBio = '';
+  String _originalOccupation = '';
+  String _originalSchool = '';
+  String _originalCity = '';
+  bool _savedSuccessfully = false;
+
+  bool get _promptsChanged {
+    if (_prompts.length != _originalPrompts.length) return true;
+    for (var i = 0; i < _prompts.length; i++) {
+      if (_prompts[i].question != _originalPrompts[i].prompt ||
+          _prompts[i].controller.text.trim() !=
+              _originalPrompts[i].answer.trim()) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   bool get _isDirty {
-    final profile = context.read<AuthProvider>().currentProfile;
-    if (profile == null) return false;
-    return _bioController.text.trim() != (profile.bio.trim()) ||
-        _occupationController.text.trim() != profile.occupation.trim() ||
-        _schoolController.text.trim() != profile.school.trim() ||
-        _cityController.text.trim() != profile.city.trim() ||
+    if (_savedSuccessfully) return false;
+    return _bioController.text.trim() != _originalBio.trim() ||
+        _occupationController.text.trim() != _originalOccupation.trim() ||
+        _schoolController.text.trim() != _originalSchool.trim() ||
+        _cityController.text.trim() != _originalCity.trim() ||
         _heightController.text.trim() !=
             (_originalHeightCm?.toString() ?? '') ||
         !_listEquals(_photos, _originalPhotos) ||
@@ -94,7 +111,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _goal != _originalGoal ||
         _basics.toString() != _originalBasics.toString() ||
         _lifestyle.toString() != _originalLifestyle.toString() ||
-        _prompts.any((p) => p.controller.text.trim().isNotEmpty);
+        _promptsChanged;
   }
 
   static bool _listEquals(List<String> a, List<String> b) {
@@ -133,6 +150,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _originalLifestyle = Map<String, String>.from(_lifestyle);
     _originalGoal = _goal;
     _originalHeightCm = profile?.heightCm;
+    _originalBio = profile?.bio ?? '';
+    _originalOccupation = profile?.occupation ?? '';
+    _originalSchool = profile?.school ?? '';
+    _originalCity = profile?.city ?? '';
+    _originalPrompts = [
+      for (final p in profile?.prompts ?? const <PromptAnswer>[])
+        PromptAnswer(prompt: p.prompt, answer: p.answer),
+    ];
 
     final target = widget.initialSection;
     if (target != null) {
@@ -336,10 +361,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: SizedBox(
                   width: constraints.maxWidth,
                   height: constraints.maxHeight,
-                  child: Opacity(opacity: 0.85, child: tile),
+                  child: Opacity(
+                    opacity: 0.85,
+                    child: RepaintBoundary(child: tile),
+                  ),
                 ),
               ),
-              childWhenDragging: Opacity(opacity: 0.3, child: tile),
+              childWhenDragging: Opacity(
+                opacity: 0.3,
+                child: RepaintBoundary(child: tile),
+              ),
               child: Container(
                 foregroundDecoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
@@ -668,7 +699,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     await auth.updateProfile(updated);
 
     if (mounted) {
-      setState(() => _isSaving = false);
+      setState(() {
+        _isSaving = false;
+        _savedSuccessfully = true;
+      });
       _snack('Profile updated successfully! ✨',
           color: AppColors.primary);
       Navigator.pop(context);
@@ -682,13 +716,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: !_isDirty,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        if (!_isDirty) {
-          Navigator.of(context).pop();
-          return;
-        }
         final leave = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
@@ -726,6 +756,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         );
         if ((leave ?? false) && context.mounted) {
+          setState(() => _savedSuccessfully = true);
           Navigator.of(context).pop();
         }
       },

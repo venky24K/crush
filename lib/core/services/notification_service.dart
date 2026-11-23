@@ -58,8 +58,20 @@ class NotificationService {
 
       // On iOS, wait for APNs token before retrieving FCM token
       if (Platform.isIOS) {
-        final apnsToken = await messaging.getAPNSToken();
+        String? apnsToken = await messaging.getAPNSToken();
         debugPrint('[NotificationService] APNs Token received: ${apnsToken != null}');
+        if (apnsToken == null) {
+          // On physical iOS devices or simulator, APNs token may arrive with a slight delay.
+          for (var i = 0; i < 3 && apnsToken == null; i++) {
+            await Future.delayed(const Duration(milliseconds: 500));
+            apnsToken = await messaging.getAPNSToken();
+          }
+        }
+        if (apnsToken == null) {
+          debugPrint('[NotificationService] APNs token not yet available. FCM token will sync on refresh.');
+          _isInitialized = true;
+          return;
+        }
       }
 
       // Retrieve FCM device token
@@ -98,7 +110,17 @@ class NotificationService {
     if (userId.isEmpty) return;
 
     try {
-      _fcmToken ??= await FirebaseMessaging.instance.getToken();
+      if (_fcmToken == null) {
+        if (Platform.isIOS) {
+          final apns = await FirebaseMessaging.instance.getAPNSToken();
+          if (apns == null) {
+            debugPrint('[NotificationService] APNs token not ready yet; deferring FCM sync.');
+            return;
+          }
+        }
+        _fcmToken = await FirebaseMessaging.instance.getToken();
+      }
+
       if (_fcmToken != null && _supabaseService.client != null) {
         await _supabaseService.client!
             .from('profiles')
@@ -107,8 +129,8 @@ class NotificationService {
         debugPrint('[NotificationService] Synced FCM token to profile $userId');
       }
     } catch (e) {
-      // Non-fatal if column doesn't exist yet in Supabase
-      debugPrint('[NotificationService] Error syncing FCM token: $e');
+      // Non-fatal if column doesn't exist yet in Supabase or APNs not ready
+      debugPrint('[NotificationService] Note syncing FCM token: $e');
     }
   }
 

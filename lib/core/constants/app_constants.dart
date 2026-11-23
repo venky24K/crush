@@ -3,6 +3,8 @@ class AppConstants {
 
   static const String appName = 'Crush';
   static const String appTagline = 'Spark genuine connections';
+  static const String appVersion = '1.0.1';
+  static const String appBuildNumber = '3';
 
   // Supabase Configuration
   static const String defaultSupabaseUrl =

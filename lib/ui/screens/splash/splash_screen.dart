@@ -143,35 +143,37 @@ class _SplashScreenState extends State<SplashScreen>
                   const Spacer(flex: 3),
 
                   // ─── Glowing Aura & Brand Logo ───
-                  AnimatedBuilder(
-                    animation: _pulseController,
-                    builder: (context, child) {
-                      final scale = 1.0 + (_pulseController.value * 0.04);
-                      final auraOpacity = 0.15 + (_pulseController.value * 0.12);
+                  RepaintBoundary(
+                    child: AnimatedBuilder(
+                      animation: _pulseController,
+                      builder: (context, child) {
+                        final scale = 1.0 + (_pulseController.value * 0.04);
+                        final auraOpacity = 0.15 + (_pulseController.value * 0.12);
 
-                      return Transform.scale(
-                        scale: scale,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withValues(alpha: auraOpacity),
-                                blurRadius: 40 + (_pulseController.value * 20),
-                                spreadRadius: 4 + (_pulseController.value * 6),
-                              ),
-                            ],
+                        return Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: auraOpacity),
+                                  blurRadius: 40 + (_pulseController.value * 20),
+                                  spreadRadius: 4 + (_pulseController.value * 6),
+                                ),
+                              ],
+                            ),
+                            child: child,
                           ),
-                          child: child,
+                        );
+                      },
+                      child: Hero(
+                        tag: 'crush_logo_hero',
+                        child: Image.asset(
+                          'assets/images/logo_wordmark.png',
+                          height: 72,
+                          fit: BoxFit.contain,
                         ),
-                      );
-                    },
-                    child: Hero(
-                      tag: 'crush_logo_hero',
-                      child: Image.asset(
-                        'assets/images/logo_wordmark.png',
-                        height: 72,
-                        fit: BoxFit.contain,
                       ),
                     ),
                   )
