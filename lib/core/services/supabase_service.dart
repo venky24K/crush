@@ -215,6 +215,46 @@ class SupabaseService {
     }
   }
 
+  Future<List<ProfileModel>> fetchIncomingLikes(String currentUserId) async {
+    if (client == null || currentUserId.isEmpty) return [];
+
+    try {
+      final response = await client!
+          .from('swipes')
+          .select('swiper_id, action, created_at, swiper:profiles!swiper_id(*)')
+          .eq('swiped_id', currentUserId)
+          .inFilter('action', ['like', 'superlike'])
+          .order('created_at', ascending: false);
+
+      final mySwipes = await client!
+          .from('swipes')
+          .select('swiped_id')
+          .eq('swiper_id', currentUserId);
+
+      final mySwipedIds = (mySwipes as List)
+          .map((s) => s['swiped_id']?.toString() ?? '')
+          .toSet();
+
+      final List<ProfileModel> likes = [];
+      for (final row in response as List) {
+        final swiperId = row['swiper_id']?.toString() ?? '';
+        if (!mySwipedIds.contains(swiperId) && row['swiper'] != null) {
+          try {
+            final profile =
+                ProfileModel.fromJson(Map<String, dynamic>.from(row['swiper']));
+            likes.add(profile);
+          } catch (e) {
+            debugPrint('[SupabaseService] Parse error on incoming like: $e');
+          }
+        }
+      }
+      return likes;
+    } catch (e) {
+      debugPrint('[SupabaseService] Error fetching incoming likes: $e');
+      return [];
+    }
+  }
+
   Future<List<MessageModel>> fetchMessages(String matchId) async {
     if (client == null || matchId.isEmpty) {
       return [];

@@ -1,4 +1,4 @@
-package com.crush.app.crush
+package com.vardhan.crush.app
 
 import io.flutter.embedding.android.FlutterActivity
 

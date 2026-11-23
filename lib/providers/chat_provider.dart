@@ -9,8 +9,10 @@ class ChatProvider extends ChangeNotifier {
   final SupabaseService _supabaseService = SupabaseService();
 
   List<MatchModel> _matches = [];
+  List<ProfileModel> _incomingLikes = [];
   final Map<String, List<MessageModel>> _messagesByMatch = {};
   bool _isLoading = false;
+  bool _isLoadingLikes = false;
 
   RealtimeChannel? _matchesChannel;
   RealtimeChannel? _currentChatChannel;
@@ -22,7 +24,9 @@ class ChatProvider extends ChangeNotifier {
       ValueNotifier<MatchModel?>(null);
 
   List<MatchModel> get matches => _matches;
+  List<ProfileModel> get incomingLikes => _incomingLikes;
   bool get isLoading => _isLoading;
+  bool get isLoadingLikes => _isLoadingLikes;
 
   int get totalUnreadCount =>
       _matches.where((match) => match.hasUnread).length;
@@ -39,6 +43,79 @@ class ChatProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> loadIncomingLikes(String currentUserId) async {
+    if (currentUserId.isEmpty) return;
+    _isLoadingLikes = true;
+    notifyListeners();
+
+    try {
+      _incomingLikes = await _supabaseService.fetchIncomingLikes(currentUserId);
+    } catch (e) {
+      debugPrint('[ChatProvider] Error fetching incoming likes: $e');
+    }
+
+    _isLoadingLikes = false;
+    notifyListeners();
+  }
+
+  Future<MatchModel?> acceptLike({
+    required String currentUserId,
+    required ProfileModel targetProfile,
+  }) async {
+    try {
+      final isMatch = await _supabaseService.recordSwipe(
+        swiperId: currentUserId,
+        swipedId: targetProfile.id,
+        action: 'like',
+      );
+
+      _incomingLikes.removeWhere((p) => p.id == targetProfile.id);
+
+      if (isMatch) {
+        final updatedMatches =
+            await _supabaseService.fetchMatches(currentUserId);
+        _matches = updatedMatches;
+
+        final newMatch = _matches.firstWhere(
+          (m) => m.matchedUserId == targetProfile.id,
+          orElse: () => MatchModel(
+            id: 'match_${DateTime.now().millisecondsSinceEpoch}',
+            matchedUserId: targetProfile.id,
+            user: targetProfile,
+            createdAt: DateTime.now(),
+            lastMessageAt: DateTime.now(),
+          ),
+        );
+
+        notifyListeners();
+        return newMatch;
+      }
+
+      notifyListeners();
+      return null;
+    } catch (e) {
+      debugPrint('[ChatProvider] Error accepting like: $e');
+      return null;
+    }
+  }
+
+  Future<void> rejectLike({
+    required String currentUserId,
+    required String targetUserId,
+  }) async {
+    try {
+      await _supabaseService.recordSwipe(
+        swiperId: currentUserId,
+        swipedId: targetUserId,
+        action: 'pass',
+      );
+      _incomingLikes.removeWhere((p) => p.id == targetUserId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[ChatProvider] Error rejecting like: $e');
+    }
   }
 
   /// Subscribe to realtime match creation for the current logged-in user
